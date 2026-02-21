@@ -3,18 +3,28 @@
         <h2 class="form-title">注册</h2>
         <p class="form-subtitle">CREATE YOUR ACCOUNT</p>
         <form @submit.prevent>
-            <input type="text" v-model="form.name" class="wInput" placeholder="用户名" required>
-            <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (如 Amaris#31262)">
-            <input type="text" v-model="form.qq" class="wInput" placeholder="QQ号">
+            <input type="text" v-model="form.name" class="wInput" placeholder="显示昵称" required>
+            
             <div class="inline-row">
-                <input type="text" v-model="form.phoneNumber" class="wInputSmall" placeholder="手机号" required>
-                <select v-model="form.region" class="region-select">
+                <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (如 Amaris#31262)" style="flex: 2; margin-top: 0;">
+                <select v-model="form.region" class="region-select" style="flex: 1; margin-top: 0;">
                     <option value="US">美服</option>
                     <option value="EU">欧服</option>
                     <option value="KR">韩服</option>
                     <option value="CN">国服</option>
                 </select>
             </div>
+
+            <input type="email" v-model="form.email" class="wInput" placeholder="电子邮箱" required>
+            
+            <div class="code-row">
+                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0;">
+                <button class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0" style="margin-top: 0;">
+                    {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
+                </button>
+            </div>
+
+            <input type="text" v-model="form.qq" class="wInput" placeholder="QQ号">
             <input type="password" v-model="form.password" class="wInput" placeholder="密码" required>
             <input type="password" v-model="confirmPassword" class="wInput" placeholder="确认密码" required>
         </form>
@@ -30,21 +40,45 @@ import { ref, reactive } from 'vue';
 import router from '@/router/router';
 import wSubmitButton from './widgets/wSubmitButton.vue';
 import wTextButton from './widgets/wTextButton.vue';
-import { register, saveUser } from '../api/api.js';
+import { register, saveUser, sendEmailCode } from '../api/api.js';
 import '../css/widgets.css';
 
 const form = reactive({
-    name: '', battleTag: '', qq: '', phoneNumber: '', password: '', region: 'US'
+    name: '', battleTag: '', email: '', emailCode: '', qq: '', password: '', region: 'CN'
 });
 const confirmPassword = ref('');
 const errorMsg = ref('');
 const successMsg = ref('');
+const countdown = ref(0);
+let timer = null;
+
+async function handleSendCode() {
+    if (!form.email) {
+        errorMsg.value = '请先输入邮箱';
+        return;
+    }
+    try {
+        await sendEmailCode(form.email);
+        errorMsg.value = '';
+        successMsg.value = '验证码已发送到邮箱';
+        countdown.value = 60;
+        timer = setInterval(() => {
+            countdown.value--;
+            if (countdown.value <= 0) {
+                clearInterval(timer);
+                successMsg.value = '';
+            }
+        }, 1000);
+    } catch (e) {
+        errorMsg.value = e.response?.data?.msg || '发送失败，请重试';
+    }
+}
 
 async function handleRegister() {
     errorMsg.value = '';
     successMsg.value = '';
-    if (!form.phoneNumber || !form.password) {
-        errorMsg.value = '请填写手机号和密码';
+    if (!form.email || !form.password || !form.emailCode) {
+        errorMsg.value = '请完善注册信息';
         return;
     }
     if (form.password !== confirmPassword.value) {
@@ -61,7 +95,7 @@ async function handleRegister() {
             errorMsg.value = res.data.msg || '注册失败';
         }
     } catch (e) {
-        errorMsg.value = '网络错误，请重试';
+        errorMsg.value = e.response?.data?.msg || '网络错误，请重试';
     }
 }
 
@@ -105,8 +139,59 @@ form {
 
 .inline-row {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.code-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.send-code-btn {
+    padding: 0 15px;
+    background: var(--sc2-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    white-space: nowrap;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.send-code-btn:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.region-select {
+    height: 48px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--sc2-border);
+    color: var(--sc2-text-bright);
+    padding: 0 10px;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.error-msg {
+    color: var(--sc2-danger);
+    font-size: 13px;
+    margin: 8px 0;
+}
+
+.success-msg {
+    color: #00ff00;
+    font-size: 13px;
+    margin: 8px 0;
 }
 
 .region-select {

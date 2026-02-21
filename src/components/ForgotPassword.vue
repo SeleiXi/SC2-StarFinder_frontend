@@ -1,20 +1,20 @@
 <template>
     <div class="login-form">
-        <h2 class="form-title">登录</h2>
-        <p class="form-subtitle">VERIFICATION CODE</p>
+        <h2 class="form-title">找回账号</h2>
+        <p class="form-subtitle">RESET PASSWORD</p>
         <form @submit.prevent>
             <div class="code-row">
-                <input type="email" class="wInputSmall" placeholder="电子邮箱" required v-model="email">
+                <input type="email" class="wInputSmall" placeholder="注册邮箱" required v-model="email">
                 <button class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0">
                     {{ countdown > 0 ? `${countdown}s` : '发送' }}
                 </button>
             </div>
             <input type="text" class="wInput" placeholder="验证码" required v-model="code">
+            <input type="password" class="wInput" placeholder="新密码" required v-model="newPassword">
         </form>
-        <wSubmitButton text="登 录" @click="handleLogin" :loading="loading"></wSubmitButton>
+        <wSubmitButton text="重 置 密 码" @click="handleReset" :loading="loading"></wSubmitButton>
         <div class="form-links">
-            <wTextButton text="账号密码登录" @click="sendMessage"></wTextButton>
-            <wTextButton text="没有账号？马上注册" @click="registerMessage"></wTextButton>
+            <wTextButton text="返回登录" @click="backToLogin"></wTextButton>
         </div>
     </div>
 </template>
@@ -24,12 +24,13 @@ import { ref } from 'vue';
 import wSubmitButton from './widgets/wSubmitButton.vue';
 import wTextButton from './widgets/wTextButton.vue';
 import '../css/widgets.css';
-import { sendEmailCode, loginByCode } from '../api/api';
+import { sendEmailCode, resetPassword } from '../api/api';
 
-const emit = defineEmits(['changeMode', 'jumpToRegisterPage', 'userLogin']);
+const emit = defineEmits(['backToLogin']);
 
 const email = ref('');
 const code = ref('');
+const newPassword = ref('');
 const countdown = ref(0);
 const loading = ref(false);
 
@@ -42,42 +43,39 @@ async function handleSendCode() {
     }
     try {
         await sendEmailCode(email.value);
-        alert('验证码已发送到邮箱，请查收');
+        alert('验证码已发送到邮箱');
         countdown.value = 60;
         timer = setInterval(() => {
             countdown.value--;
-            if (countdown.value <= 0) {
-                clearInterval(timer);
-            }
+            if (countdown.value <= 0) clearInterval(timer);
         }, 1000);
     } catch (error) {
         alert(error.response?.data?.msg || '发送失败');
     }
 }
 
-async function handleLogin() {
-    if (!email.value || !code.value) {
+async function handleReset() {
+    if (!email.value || !code.value || !newPassword.value) {
         alert('请完善信息');
         return;
     }
     loading.value = true;
     try {
-        const res = await loginByCode(email.value, code.value);
-        if (res.data.code === 200) {
-            localStorage.setItem('user', JSON.stringify(res.data.data));
-            emit('userLogin');
+        const res = await resetPassword(email.value, code.value, newPassword.value);
+        if (res.data.code === 200 || res.data.code === 1) {
+            alert('密码重置成功，请重新登录');
+            emit('backToLogin');
         } else {
             alert(res.data.msg);
         }
     } catch (error) {
-        alert(error.response?.data?.msg || '登录失败');
+        alert(error.response?.data?.msg || '操作失败');
     } finally {
         loading.value = false;
     }
 }
 
-function sendMessage() { emit('changeMode'); }
-function registerMessage() { emit('jumpToRegisterPage'); }
+function backToLogin() { emit('backToLogin'); }
 </script>
 
 <style scoped>
@@ -91,10 +89,10 @@ function registerMessage() { emit('jumpToRegisterPage'); }
 
 .form-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     color: var(--sc2-text-bright);
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     margin-bottom: 4px;
 }
 
@@ -135,14 +133,9 @@ form {
 
 .send-code-btn:hover {
     background: var(--sc2-accent-glow);
-    box-shadow: 0 0 12px rgba(0, 180, 216, 0.3);
 }
 
 .form-links {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
     margin-top: 24px;
 }
 </style>

@@ -119,6 +119,15 @@
                     <div class="avatar-mini"></div>
                     <span class="nav-label">{{ currentUser?.name || '个人信息' }}</span>
                 </a>
+                <button class="nav-item logout-btn" v-if="isLogin" @click="handleLogout"
+                    style="margin-top: 10px; border: none; background: transparent; width: 100%; cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="#ff4444">
+                        <path
+                            d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-56-58 102-102H360v-80h326L584-622l56-58 200 200-200 200Z" />
+                    </svg>
+                    <span class="nav-label" style="color: #ff4444;" v-show="!sidebarCollapsed">安全退出</span>
+                </button>
                 <a href="#" class="nav-item" v-else @click.prevent="jumpToLoginPage">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
@@ -173,7 +182,7 @@ import CheaterList from './components/CheaterList.vue';
 import Tutorial from './components/Tutorial.vue';
 import StreamList from './components/StreamList.vue';
 import AdminPanel from './components/AdminPanel.vue';
-import { getStoredUser } from './api/api.js';
+import { getStoredUser, clearUser } from './api/api.js';
 
 const router = useRouter();
 const sidebarCollapsed = ref(false);
@@ -223,6 +232,11 @@ function onProfileUpdated(user) {
 }
 
 function jumpToLoginPage() {
+    router.push({ name: 'loginPage' });
+}
+
+function handleLogout() {
+    clearUser();
     router.push({ name: 'loginPage' });
 }
 </script>

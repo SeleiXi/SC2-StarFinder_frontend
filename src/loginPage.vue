@@ -11,7 +11,8 @@
             <div class="auth-form-area">
                 <transition name="slide-fade" mode="out-in">
                     <component :is="currentComponent" @changeMode="changeMode" @jumpToRegisterPage="jumpToRegisterPage"
-                        @userLogin="userLogin"></component>
+                        @userLogin="userLogin" @forgotPassword="jumpToForgotPassword" @backToLogin="backToLogin">
+                    </component>
                 </transition>
             </div>
         </div>
@@ -24,6 +25,7 @@ import { useRouter } from 'vue-router';
 
 import LoginUserName from './components/LoginUserName.vue';
 import LoginUserPhone from './components/LoginUserPhone.vue';
+import ForgotPassword from './components/ForgotPassword.vue';
 
 const router = useRouter();
 const currentComponent = shallowRef(LoginUserName);
@@ -34,6 +36,14 @@ function changeMode() {
 
 function jumpToRegisterPage() {
     router.push({ name: 'registerPage' });
+}
+
+function jumpToForgotPassword() {
+    currentComponent.value = ForgotPassword;
+}
+
+function backToLogin() {
+    currentComponent.value = LoginUserName;
 }
 
 function userLogin() {

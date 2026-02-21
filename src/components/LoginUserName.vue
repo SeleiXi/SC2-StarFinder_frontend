@@ -3,13 +3,17 @@
         <h2 class="form-title">登录</h2>
         <p class="form-subtitle">WELCOME BACK, COMMANDER</p>
         <form @submit.prevent>
-            <input type="text" v-model="account" class="wInput" placeholder="手机号/昵称" required>
+            <input type="text" v-model="account" class="wInput" placeholder="电子邮箱 / 昵称" required>
             <input type="password" v-model="password" class="wInput" placeholder="密码" required>
         </form>
         <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
         <wSubmitButton text="登 录" @click="userLogin"></wSubmitButton>
         <div class="form-links">
-            <wTextButton text="验证码登录" @click="sendMessage"></wTextButton>
+            <div class="row-links">
+                <wTextButton text="验证码登录" @click="sendMessage"></wTextButton>
+                <span class="divider">|</span>
+                <wTextButton text="找回账号" @click="emit('forgotPassword')"></wTextButton>
+            </div>
             <wTextButton text="没有账号？马上注册" @click="registerMessage"></wTextButton>
         </div>
     </div>
@@ -22,7 +26,7 @@ import wTextButton from './widgets/wTextButton.vue';
 import { login, saveUser } from '../api/api.js';
 import '../css/widgets.css';
 
-const emit = defineEmits(['changeMode', 'jumpToRegisterPage', 'userLogin']);
+const emit = defineEmits(['changeMode', 'jumpToRegisterPage', 'userLogin', 'forgotPassword']);
 
 const account = ref('');
 const password = ref('');
@@ -38,7 +42,7 @@ async function userLogin() {
         return;
     }
     try {
-        const res = await login({ phoneNumber: account.value, password: password.value });
+        const res = await login({ email: account.value, password: password.value });
         if (res.data.code === 200) {
             saveUser(res.data.data);
             emit('userLogin');
@@ -96,5 +100,16 @@ form {
     align-items: center;
     gap: 16px;
     margin-top: 24px;
+}
+
+.row-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.divider {
+    color: var(--sc2-border);
+    font-size: 12px;
 }
 </style>
