@@ -9,7 +9,7 @@
                         d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160Z" />
                 </svg>
                 <span class="panel-title">你的种族</span>
-                <span class="mmr-badge">MMR: {{ userMmr }}</span>
+                <span class="mmr-badge" v-if="mode !== 'coop'">MMR: {{ userMmr }}</span>
             </div>
             <div class="race-grid">
                 <div class="race-card" :class="{ selected: myRace === 'T', terran: myRace === 'T' }"
@@ -41,7 +41,7 @@
         <!-- Opponent Race -->
         <div class="sc2-panel race-panel" style="margin-top: 20px;">
             <div class="panel-header">
-                <span class="panel-title">对手种族</span>
+                <span class="panel-title">匹配者种族</span>
             </div>
             <div class="race-grid">
                 <div class="race-card small" :class="{ selected: opponentRace === 'T', terran: opponentRace === 'T' }"
@@ -98,7 +98,7 @@
                     <tr>
                         <th>昵称</th>
                         <th>战网ID</th>
-                        <th>MMR</th>
+                        <th v-if="mode !== 'coop'">MMR</th>
                         <th>种族</th>
                         <th>QQ</th>
                     </tr>
@@ -107,7 +107,7 @@
                     <tr v-for="p in matchResults" :key="p.id">
                         <td>{{ p.name }}</td>
                         <td>{{ p.battleTag || '-' }}</td>
-                        <td><span class="mmr-cell">{{ p.mmr }}</span></td>
+                        <td v-if="mode !== 'coop'"><span class="mmr-cell">{{ getDisplayMmr(p) }}</span></td>
                         <td>{{ raceMap[p.race] || p.race || '-' }}</td>
                         <td>{{ p.qq || '-' }}</td>
                     </tr>
@@ -137,13 +137,26 @@ const searched = ref(false);
 
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 
-const userMmr = computed(() => props.user?.mmr || 0);
+const userMmr = computed(() => {
+    if (!props.user) return 0;
+    if (props.mode === '2v2') return props.user.mmr2v2 || 0;
+    if (props.mode === '3v3') return props.user.mmr3v3 || 0;
+    if (props.mode === '4v4') return props.user.mmr4v4 || 0;
+    return props.user.mmr || 0;
+});
+
+function getDisplayMmr(p) {
+    if (props.mode === '2v2') return p.mmr2v2 || 0;
+    if (props.mode === '3v3') return p.mmr3v3 || 0;
+    if (props.mode === '4v4') return p.mmr4v4 || 0;
+    return p.mmr || 0;
+}
 
 async function startMatch() {
     searched.value = true;
-    const mmr = userMmr.value || 4000;
+    const mmr = userMmr.value || 0;
     try {
-        const res = await findMatches(mmr, mmrRange.value, opponentRace.value);
+        const res = await findMatches(mmr, mmrRange.value, opponentRace.value, props.mode);
         matchResults.value = res.data.filter(p => props.user && p.id !== props.user.id);
     } catch (e) {
         matchResults.value = [];

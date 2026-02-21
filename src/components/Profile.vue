@@ -26,24 +26,50 @@
 
             <div class="info-grid">
                 <div class="info-item">
-                    <span class="info-label">战网ID</span>
-                    <span class="info-value">{{ user?.battleTag || '未绑定' }}</span>
+                    <span class="info-label">战网ID (国服)</span>
+                    <span class="info-value">{{ user?.battleTagCN || '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">战网ID (美服)</span>
+                    <span class="info-value">{{ user?.battleTagUS || '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">战网ID (欧服)</span>
+                    <span class="info-value">{{ user?.battleTagEU || '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">战网ID (韩服/台服)</span>
+                    <span class="info-value">{{ user?.battleTagKR || '-' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">QQ</span>
                     <span class="info-value">{{ user?.qq || '未设置' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">MMR</span>
-                    <span class="info-value mmr">{{ user?.mmr || 0 }}</span>
-                </div>
-                <div class="info-item">
                     <span class="info-label">种族</span>
                     <span class="info-value">{{ raceMap[user?.race] || '未选择' }}</span>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">服务器</span>
-                    <span class="info-value">{{ user?.region || '未选择' }}</span>
+            </div>
+
+            <div class="mmr-display-section" v-if="user?.mmr || user?.mmr2v2 || user?.mmr3v3 || user?.mmr4v4">
+                <h3>MMR 详情 (自动同步)</h3>
+                <div class="mmr-grid">
+                    <div class="mmr-box">
+                        <div class="mmr-label">1v1</div>
+                        <div class="mmr-value">{{ user?.mmr || 0 }}</div>
+                    </div>
+                    <div class="mmr-box">
+                        <div class="mmr-label">2v2</div>
+                        <div class="mmr-value">{{ user?.mmr2v2 || 0 }}</div>
+                    </div>
+                    <div class="mmr-box">
+                        <div class="mmr-label">3v3</div>
+                        <div class="mmr-value">{{ user?.mmr3v3 || 0 }}</div>
+                    </div>
+                    <div class="mmr-box">
+                        <div class="mmr-label">4v4</div>
+                        <div class="mmr-value">{{ user?.mmr4v4 || 0 }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -170,71 +196,82 @@ function jumpToProfileEditPage() {
 .profile-sig {
     color: var(--sc2-text-dim);
     font-style: italic;
-    margin: 12px 0 24px;
-    font-size: 14px;
+    margin: 10px 0 30px;
 }
 
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     text-align: left;
 }
 
 .info-item {
-    background: var(--sc2-bg-dark);
-    border: 1px solid var(--sc2-border);
-    border-radius: 8px;
-    padding: 14px;
-    transition: border-color 0.2s;
-}
-
-.info-item:hover {
-    border-color: var(--sc2-border-glow);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .info-label {
-    display: block;
-    font-size: 11px;
-    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
     color: var(--sc2-text-dim);
-    letter-spacing: 1px;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    letter-spacing: 0.5px;
 }
 
 .info-value {
     font-size: 16px;
-    font-weight: 600;
-    color: var(--sc2-text);
+    color: var(--sc2-text-bright);
+    font-family: 'Orbitron', sans-serif;
 }
 
 .info-value.mmr {
-    font-family: 'Share Tech Mono', monospace;
-    color: var(--sc2-gold);
+    color: var(--sc2-accent);
+    font-weight: bold;
 }
 
-@media (max-width: 768px) {
-    .profile-banner {
-        height: 160px;
-    }
+.mmr-display-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--sc2-border);
+}
 
-    .profile-avatar {
-        width: 90px;
-        height: 90px;
-        margin-top: -45px;
-    }
+.mmr-display-section h3 {
+    font-size: 16px;
+    color: var(--sc2-accent);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
-    .profile-card {
-        padding: 60px 16px 20px;
-    }
+.mmr-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
 
-    .info-grid {
-        gap: 8px;
-    }
+.mmr-box {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 180, 216, 0.2);
+}
 
-    .info-item {
-        padding: 10px;
+.mmr-label {
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+    margin-bottom: 5px;
+}
+
+.mmr-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--sc2-accent);
+}
+
+@media (max-width: 600px) {
+    .mmr-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 </style>

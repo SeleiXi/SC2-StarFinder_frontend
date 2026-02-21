@@ -10,14 +10,40 @@
 
         <!-- ===== Users Tab ===== -->
         <div v-if="activeTab === 'users'" class="tab-content">
+            <!-- Edit User Form -->
+            <div v-if="editingUser" class="add-form" style="max-width: 600px;">
+                <h3>编辑用户: {{ editingUser.name }}</h3>
+                <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input v-model="editForm.name" placeholder="昵称" class="wInput" style="flex:1" />
+                    <input v-model="editForm.email" placeholder="邮箱" class="wInput" style="flex:1" disabled />
+                </div>
+                <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input v-model="editForm.battleTag" placeholder="BattleTag" class="wInput" style="flex:1" />
+                    <input v-model="editForm.password" placeholder="新密码 (留空则不修改)" class="wInput" style="flex:1" />
+                </div>
+                <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input v-model.number="editForm.mmr" placeholder="MMR" type="number" class="wInput" style="flex:1" />
+                    <select v-model="editForm.region" class="role-select" style="flex:1; height:48px; margin-top:16px;">
+                        <option value="US">US</option>
+                        <option value="EU">EU</option>
+                        <option value="KR">KR</option>
+                        <option value="CN">CN</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-success" @click="updateUserData">保存修改</button>
+                    <button class="btn-cancel" @click="editingUser = null">取消</button>
+                </div>
+            </div>
+
             <div class="admin-table-wrap">
                 <table class="admin-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>用户名</th>
+                            <th>邮箱</th>
                             <th>BattleTag</th>
-                            <th>种族</th>
                             <th>MMR</th>
                             <th>角色</th>
                             <th>操作</th>
@@ -27,17 +53,19 @@
                         <tr v-for="u in users" :key="u.id">
                             <td>{{ u.id }}</td>
                             <td>{{ u.name }}</td>
+                            <td>{{ u.email }}</td>
                             <td>{{ u.battleTag }}</td>
-                            <td>{{ u.race }}</td>
                             <td>{{ u.mmr }}</td>
                             <td>
                                 <select :value="u.role || 'user'" @change="changeRole(u, $event.target.value)"
-                                    class="role-select">
+                                    class="role-select" :disabled="u.id === props.user.id">
                                     <option value="user">user</option>
                                     <option value="admin">admin</option>
+                                    <option v-if="props.user.role === 'super_admin'" value="super_admin">super_admin</option>
                                 </select>
                             </td>
                             <td>
+                                <button class="btn-warn btn-sm" @click="startEditUser(u)" style="margin-right:5px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteUser(u.id)">删除</button>
                             </td>
                         </tr>
@@ -169,7 +197,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
 import {
-    adminListUsers, adminDeleteUser, adminSetRole,
+    adminListUsers, adminDeleteUser, adminSetRole, adminUpdateUser,
     adminListCheaters, adminApproveCheater, adminRejectCheater, adminDeleteCheater,
     adminListEvents, adminApproveEvent, adminRejectEvent, adminDeleteEvent,
     adminListTutorials, adminCreateTutorial, adminDeleteTutorial
@@ -192,6 +220,31 @@ const tutorials = ref([]);
 const showTutorialForm = ref(false);
 const tForm = reactive({ title: '', url: '', category: '', description: '', author: '' });
 
+const editingUser = ref(null);
+const editForm = reactive({ name: '', email: '', battleTag: '', password: '', mmr: 0, region: 'US' });
+
+function startEditUser(user) {
+    editingUser.value = user;
+    Object.assign(editForm, {
+        name: user.name,
+        email: user.email,
+        battleTag: user.battleTag,
+        password: '', // Reset password input
+        mmr: user.mmr,
+        region: user.region || 'US'
+    });
+}
+
+async function updateUserData() {
+    try {
+        await adminUpdateUser(editingUser.value.id, { ...editForm }, adminId());
+        editingUser.value = null;
+        await loadUsers();
+    } catch (e) {
+        alert(e.response?.data?.msg || '保存失败');
+    }
+}
+
 const adminId = () => props.user?.id;
 
 async function loadUsers() {
@@ -208,11 +261,31 @@ async function loadTutorials() {
 }
 
 async function changeRole(user, role) {
-    try { await adminSetRole(user.id, role, adminId()); user.role = role; } catch (e) { alert('修改失败'); }
+    try { 
+        const res = await adminSetRole(user.id, role, adminId()); 
+        if (res.data.code === 200) {
+            user.role = role; 
+        } else {
+            alert(res.data.msg || '修改失败');
+            await loadUsers(); // Reset view
+        }
+    } catch (e) { 
+        alert(e.response?.data?.msg || '修改失败'); 
+        await loadUsers();
+    }
 }
 async function deleteUser(id) {
     if (!confirm('确认删除该用户？')) return;
-    try { await adminDeleteUser(id, adminId()); await loadUsers(); } catch (e) { alert('删除失败'); }
+    try { 
+        const res = await adminDeleteUser(id, adminId()); 
+        if (res.data.code === 200) {
+            await loadUsers(); 
+        } else {
+            alert(res.data.msg || '删除失败');
+        }
+    } catch (e) { 
+        alert(e.response?.data?.msg || '删除失败'); 
+    }
 }
 
 async function approveCheater(id) {

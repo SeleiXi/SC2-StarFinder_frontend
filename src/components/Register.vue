@@ -3,10 +3,17 @@
         <h2 class="form-title">注册</h2>
         <p class="form-subtitle">CREATE YOUR ACCOUNT</p>
         <form @submit.prevent>
-            <input type="text" v-model="form.name" class="wInput" placeholder="显示昵称" required>
+            <input type="email" v-model="form.email" class="wInput" placeholder="电子邮箱" required>
             
+            <div class="code-row">
+                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0;">
+                <button type="button" class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0" style="margin-top: 0;">
+                    {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
+                </button>
+            </div>
+
             <div class="inline-row">
-                <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (如 Amaris#31262)" style="flex: 2; margin-top: 0;">
+                <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (选填，如 Amaris#31262)" style="flex: 2; margin-top: 0;">
                 <select v-model="form.region" class="region-select" style="flex: 1; margin-top: 0;">
                     <option value="US">美服</option>
                     <option value="EU">欧服</option>
@@ -15,18 +22,8 @@
                 </select>
             </div>
 
-            <input type="email" v-model="form.email" class="wInput" placeholder="电子邮箱" required>
-            
-            <div class="code-row">
-                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0;">
-                <button class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0" style="margin-top: 0;">
-                    {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
-                </button>
-            </div>
-
-            <input type="text" v-model="form.qq" class="wInput" placeholder="QQ号">
-            <input type="password" v-model="form.password" class="wInput" placeholder="密码" required>
-            <input type="password" v-model="confirmPassword" class="wInput" placeholder="确认密码" required>
+            <input type="text" v-model="form.qq" class="wInput" placeholder="QQ号 (选填)">
+            <input type="password" v-model="form.password" class="wInput" placeholder="密码 (至少8位)" required>
         </form>
         <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
         <span v-if="successMsg" class="success-msg">{{ successMsg }}</span>
@@ -44,9 +41,8 @@ import { register, saveUser, sendEmailCode } from '../api/api.js';
 import '../css/widgets.css';
 
 const form = reactive({
-    name: '', battleTag: '', email: '', emailCode: '', qq: '', password: '', region: 'CN'
+    battleTag: '', email: '', emailCode: '', qq: '', password: '', region: 'CN'
 });
-const confirmPassword = ref('');
 const errorMsg = ref('');
 const successMsg = ref('');
 const countdown = ref(0);
@@ -81,10 +77,13 @@ async function handleRegister() {
         errorMsg.value = '请完善注册信息';
         return;
     }
-    if (form.password !== confirmPassword.value) {
-        errorMsg.value = '两次密码输入不一致';
+    
+    // Password strength check: at least 8 chars
+    if (form.password.length < 8) {
+        errorMsg.value = '密码太弱：需至少8位';
         return;
     }
+
     try {
         const res = await register(form);
         if (res.data.code === 200) {

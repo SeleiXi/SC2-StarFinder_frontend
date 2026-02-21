@@ -38,9 +38,10 @@ export function updateProfile(userId, data) {
     return api.put(`/user/${userId}/profile`, data);
 }
 
-export function findMatches(mmr, range, race) {
+export function findMatches(mmr, range, race, mode) {
     const params = { mmr, range };
     if (race) params.race = race;
+    if (mode) params.mode = mode;
     return api.get('/user/match', { params });
 }
 
@@ -94,6 +95,20 @@ export function getSC2Streams() {
     return api.get('/sc2/streams');
 }
 
+// ============ Stream APIs (User-added) ============
+
+export function addStream(data) {
+    return api.post('/stream', data);
+}
+
+export function listUserStreams() {
+    return api.get('/stream/list');
+}
+
+export function deleteStream(id, adminId) {
+    return api.delete(`/stream/${id}`, { params: { adminId } });
+}
+
 // ============ Admin APIs ============
 
 export function adminListUsers(adminId) {
@@ -103,7 +118,6 @@ export function adminListUsers(adminId) {
 export function adminUpdateUser(id, data, adminId) {
     return api.put(`/admin/users/${id}`, data, { params: { adminId } });
 }
-
 export function adminDeleteUser(id, adminId) {
     return api.delete(`/admin/users/${id}`, { params: { adminId } });
 }

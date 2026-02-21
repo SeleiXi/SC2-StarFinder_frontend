@@ -7,7 +7,7 @@ const distPath = path.join(__dirname, 'dist');
 
 const server = http.createServer((req, res) => {
     let filePath = path.join(distPath, req.url === '/' ? 'index.html' : req.url);
-    
+
     // SPA support: if file doesn't exist, serve index.html
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
         filePath = path.join(distPath, 'index.html');

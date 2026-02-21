@@ -16,8 +16,17 @@
                     {{ t.title }}
                     <small v-if="t.author" class="card-author">by {{ t.author }}</small>
                 </div>
-                <iframe :src="t.url" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"
-                    class="tutorial-iframe"></iframe>
+                <!-- <iframe :src="t.url" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"
+                    class="tutorial-iframe"></iframe> -->
+                <div class="video-link-area">
+                    <a :href="t.url" target="_blank" class="sc2-btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                            fill="currentColor">
+                            <path d="M320-200v-560l440 280-440 280Z" />
+                        </svg>
+                        <span>立即观看视频</span>
+                    </a>
+                </div>
                 <p v-if="t.description" class="card-desc">{{ t.description }}</p>
             </div>
         </div>
@@ -134,12 +143,31 @@ onMounted(() => loadTutorials(''));
     font-weight: 400;
 }
 
-.tutorial-iframe {
-    width: 100%;
-    max-width: 800px;
-    height: 450px;
-    border-radius: 8px;
+.video-link-area {
+    margin: 10px 0;
+}
+
+.sc2-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
     border: 1px solid var(--sc2-border);
+    border-radius: 6px;
+    background: rgba(0, 180, 216, 0.05);
+    color: var(--sc2-accent);
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.sc2-btn-secondary:hover {
+    background: var(--sc2-accent);
+    color: var(--sc2-bg-deep);
+    border-color: var(--sc2-accent);
+    box-shadow: 0 0 15px rgba(0, 180, 216, 0.3);
 }
 
 .card-desc {
@@ -158,10 +186,6 @@ onMounted(() => loadTutorials(''));
 @media (max-width: 768px) {
     .cat-tabs {
         flex-wrap: wrap;
-    }
-
-    .tutorial-iframe {
-        height: 260px;
     }
 
     .tutorial-card {

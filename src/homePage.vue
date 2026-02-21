@@ -57,6 +57,24 @@
                     <span class="nav-label">赛事宣传</span>
                 </a>
 
+                <!-- AI 战略助手 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 14 }" @click.prevent="switchPage(14)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3l-48 48q-3-1-6.5-1t-6.5-1q-117 0-198.5 81.5T193-511q0 117 81.5 198.5T473-231q117 0 198.5-81.5T753-511q0-14-1.5-27.5T748-565l48-48q5 13 8.5 26.5T808-560q0 150-105 255T448-200Z" />
+                    </svg>
+                    <span class="nav-label">AI 战略助手</span>
+                </a>
+
+                <!-- MMR 查询 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 15 }" @click.prevent="switchPage(15)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+                    </svg>
+                    <span class="nav-label">MMR 查询</span>
+                </a>
+
                 <!-- 教学视频 -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 8 }" @click.prevent="switchPage(8)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -126,7 +144,7 @@
                         <path
                             d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-56-58 102-102H360v-80h326L584-622l56-58 200 200-200 200Z" />
                     </svg>
-                    <span class="nav-label" style="color: #ff4444;" v-show="!sidebarCollapsed">安全退出</span>
+                    <span class="nav-label" style="color: #ff4444;" v-show="!sidebarCollapsed">登出</span>
                 </button>
                 <a href="#" class="nav-item" v-else @click.prevent="jumpToLoginPage">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -163,6 +181,8 @@
                 <CheaterList v-if="currentId == 11 && !profileEditMode"></CheaterList>
                 <Tutorial v-if="currentId == 8 && !profileEditMode"></Tutorial>
                 <StreamList v-if="currentId == 13 && !profileEditMode"></StreamList>
+                <AIAssistant v-if="currentId == 14 && !profileEditMode"></AIAssistant>
+                <FindMmr v-if="currentId == 15 && !profileEditMode"></FindMmr>
                 <AdminPanel v-if="currentId == 99 && !profileEditMode" :user="currentUser"></AdminPanel>
             </div>
         </main>
@@ -182,6 +202,8 @@ import CheaterList from './components/CheaterList.vue';
 import Tutorial from './components/Tutorial.vue';
 import StreamList from './components/StreamList.vue';
 import AdminPanel from './components/AdminPanel.vue';
+import AIAssistant from './components/AIAssistant.vue';
+import FindMmr from './components/FindMmr.vue';
 import { getStoredUser, clearUser } from './api/api.js';
 
 const router = useRouter();

@@ -15,26 +15,53 @@
         <div class="sc2-panel edit-form-panel">
             <h2 class="panel-title">编辑资料</h2>
             <form class="edit-form" @submit.prevent="saveProfile">
-                <input type="text" placeholder="昵称" class="wInput" v-model="form.name">
-                <input type="text" placeholder="战网ID（如 XXX#1234）" class="wInput" v-model="form.battleTag">
-                <input type="text" placeholder="QQ" class="wInput" v-model="form.qq">
-                <input type="number" placeholder="MMR" class="wInput" v-model.number="form.mmr">
-                <select class="wInput select-input" v-model="form.race">
-                    <option value="" disabled>选择种族</option>
-                    <option value="T">人族 (Terran)</option>
-                    <option value="Z">异虫 (Zerg)</option>
-                    <option value="P">星灵 (Protoss)</option>
-                    <option value="R">随机 (Random)</option>
-                </select>
-                <select class="wInput select-input" v-model="form.region">
-                    <option value="" disabled>选择服务器</option>
-                    <option value="CN">中国</option>
-                    <option value="KR">韩国</option>
-                    <option value="US">美服</option>
-                    <option value="EU">欧服</option>
-                </select>
-                <input type="text" placeholder="直播链接" class="wInput" v-model="form.streamUrl">
-                <input type="text" placeholder="个性签名" class="wInput" v-model="form.signature">
+                <div class="form-section">
+                    <label>基本信息</label>
+                    <input type="text" placeholder="昵称" class="wInput" v-model="form.name">
+                    <input type="text" placeholder="QQ" class="wInput" v-model="form.qq">
+                    <select class="wInput select-input" v-model="form.race">
+                        <option value="" disabled>选择主种族</option>
+                        <option value="T">人族 (Terran)</option>
+                        <option value="Z">异虫 (Zerg)</option>
+                        <option value="P">星灵 (Protoss)</option>
+                        <option value="R">随机 (Random)</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label>多地区战网 ID (必填一项以同步 MMR)</label>
+                    <div class="tag-input-group">
+                        <input type="text" placeholder="国服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagCN">
+                        <input type="text" placeholder="美服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagUS">
+                        <input type="text" placeholder="欧服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagEU">
+                        <input type="text" placeholder="韩服/台服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagKR">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label>个人展示</label>
+                    <input type="text" placeholder="直播链接" class="wInput" v-model="form.streamUrl">
+                    <textarea placeholder="个性签名" class="wInput textarea-input" v-model="form.signature"></textarea>
+                </div>
+
+                <div class="form-section">
+                    <label>MMR 信息 (自动从战网同步)</label>
+                    <div class="mmr-readonly-grid">
+                        <div class="mmr-item">
+                            <span>1v1: {{ form.mmr || 0 }}</span>
+                        </div>
+                        <div class="mmr-item">
+                            <span>2v2: {{ form.mmr2v2 || 0 }}</span>
+                        </div>
+                        <div class="mmr-item">
+                            <span>3v3: {{ form.mmr3v3 || 0 }}</span>
+                        </div>
+                        <div class="mmr-item">
+                            <span>4v4: {{ form.mmr4v4 || 0 }}</span>
+                        </div>
+                    </div>
+                    <span class="input-hint">MMR 将根据填写的战网ID由系统自动抓取，不可手动修改。</span>
+                </div>
             </form>
             <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
             <span v-if="successMsg" class="success-msg">{{ successMsg }}</span>
@@ -53,7 +80,20 @@ const props = defineProps({ user: Object });
 const emit = defineEmits(['profileUpdated']);
 
 const form = ref({
-    name: '', battleTag: '', qq: '', race: '', region: '', streamUrl: '', signature: '', mmr: 0
+    name: '',
+    battleTagCN: '',
+    battleTagUS: '',
+    battleTagEU: '',
+    battleTagKR: '',
+    qq: '',
+    race: '',
+    region: '',
+    streamUrl: '',
+    signature: '',
+    mmr: 0,
+    mmr2v2: 0,
+    mmr3v3: 0,
+    mmr4v4: 0
 });
 const errorMsg = ref('');
 const successMsg = ref('');
@@ -62,13 +102,19 @@ onMounted(() => {
     if (props.user) {
         form.value = {
             name: props.user.name || '',
-            battleTag: props.user.battleTag || '',
+            battleTagCN: props.user.battleTagCN || '',
+            battleTagUS: props.user.battleTagUS || '',
+            battleTagEU: props.user.battleTagEU || '',
+            battleTagKR: props.user.battleTagKR || '',
             qq: props.user.qq || '',
             race: props.user.race || '',
             region: props.user.region || '',
             streamUrl: props.user.streamUrl || '',
             signature: props.user.signature || '',
-            mmr: props.user.mmr || 0
+            mmr: props.user.mmr || 0,
+            mmr2v2: props.user.mmr2v2 || 0,
+            mmr3v3: props.user.mmr3v3 || 0,
+            mmr4v4: props.user.mmr4v4 || 0
         };
     }
 });
@@ -144,6 +190,56 @@ function selectProfilePicture() { /* placeholder */ }
     opacity: 1;
 }
 
+.form-section {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.form-section label {
+    display: block;
+    font-size: 14px;
+    color: var(--sc2-accent);
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.tag-input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.textarea-input {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.mmr-readonly-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--sc2-border);
+}
+
+.mmr-item {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--sc2-text-bright);
+    font-size: 14px;
+    text-align: center;
+}
+
+.input-hint {
+    display: block;
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+    margin-top: 8px;
+    font-style: italic;
+}
+
 .sc2-panel {
     background: linear-gradient(135deg, var(--sc2-bg-panel), var(--sc2-bg-dark));
     border: 1px solid var(--sc2-border);
@@ -199,5 +295,23 @@ function selectProfilePicture() { /* placeholder */ }
     color: var(--sc2-success);
     font-size: 13px;
     margin-top: 10px;
+}
+
+.input-with-hint {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.input-hint {
+    font-size: 12px;
+    color: var(--sc2-accent);
+    margin-bottom: 20px;
+}
+
+.wInput:disabled {
+    background: rgba(255, 255, 255, 0.05);
+    cursor: not-allowed;
+    border-style: dashed;
 }
 </style>

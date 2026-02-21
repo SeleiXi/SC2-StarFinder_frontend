@@ -1,7 +1,27 @@
 <template>
     <div class="stream-page">
-        <h1 class="page-title">直播列表</h1>
-        <p class="page-subtitle">SC2 LIVE STREAMS</p>
+        <div class="header-row">
+            <div>
+                <h1 class="page-title">直播列表</h1>
+                <p class="page-subtitle">SC2 LIVE STREAMS</p>
+            </div>
+            <button class="add-stream-btn" @click="showAddForm = true">+ 我要上榜</button>
+        </div>
+
+        <!-- Add Stream Form -->
+        <div v-if="showAddForm" class="add-stream-modal">
+            <div class="modal-content sc2-panel">
+                <h3>新增直播</h3>
+                <input v-model="form.name" class="wInput" placeholder="主播名称 (必填)" />
+                <input v-model="form.battleTag" class="wInput" placeholder="BattleTag (可选，自动同步MMR)" />
+                <input v-model="form.streamUrl" class="wInput" placeholder="直播间链接 (必填)" />
+                <input v-model="form.platform" class="wInput" placeholder="平台 (如 Bilibili/Douyu)" />
+                <div class="modal-actions">
+                    <button class="btn-success" @click="submitStream">提交</button>
+                    <button class="btn-cancel" @click="showAddForm = false">取消</button>
+                </div>
+            </div>
+        </div>
 
         <div v-if="loading" class="loading-msg">
             <div class="loader"></div>
@@ -13,31 +33,28 @@
         <div v-else class="stream-grid">
             <div class="stream-card sc2-panel" v-for="(s, i) in streams" :key="i">
                 <div class="card-top">
-                    <span class="streamer-name">{{ s.userName || s.proNickname || 'Unknown' }}</span>
-                    <span class="live-dot">
+                    <span class="streamer-name">{{ s.name || s.userName || s.proNickname || 'Unknown' }}</span>
+                    <span v-if="s.live" class="live-dot">
                         <span class="dot"></span>
                         LIVE
                     </span>
+                    <button v-if="isAdmin && s.id" class="delete-btn" @click="handleDelete(s.id)">×</button>
                 </div>
                 <div class="card-info">
-                    <div v-if="s.proTeam" class="info-row">
-                        <span class="label">战队</span>
-                        <span>{{ s.proTeam }}</span>
+                    <div v-if="s.proTeam || s.platform" class="info-row">
+                        <span class="label">平台/战队</span>
+                        <span>{{ s.platform || s.proTeam || s.service }}</span>
                     </div>
-                    <div v-if="s.rating" class="info-row">
+                    <div v-if="s.mmr || s.rating" class="info-row">
                         <span class="label">MMR</span>
-                        <span class="mmr-val">{{ s.rating }}</span>
+                        <span class="mmr-val">{{ s.mmr || s.rating }}</span>
                     </div>
                     <div v-if="s.race" class="info-row">
                         <span class="label">种族</span>
                         <span>{{ raceMap[s.race] || s.race }}</span>
                     </div>
-                    <div v-if="s.service" class="info-row">
-                        <span class="label">平台</span>
-                        <span>{{ s.service }}</span>
-                    </div>
                 </div>
-                <a v-if="s.url || s.streamUrl" :href="s.url || s.streamUrl" target="_blank" class="watch-btn">
+                <a :href="s.streamUrl || s.url" target="_blank" class="watch-btn">
                     观看直播
                 </a>
             </div>
@@ -46,23 +63,75 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getSC2Streams } from '../api/api.js';
+import { ref, reactive, onMounted, computed } from 'vue';
+import { getSC2Streams, addStream, listUserStreams, deleteStream, getStoredUser } from '../api/api.js';
 
 const streams = ref([]);
 const loading = ref(true);
-const raceMap = { TERRAN: '人族', ZERG: '异虫', PROTOSS: '星灵', RANDOM: '随机' };
+const showAddForm = ref(false);
+const raceMap = { TERRAN: '人族', ZERG: '异虫', PROTOSS: '星灵', RANDOM: '随机', T: '人族', Z: '异虫', P: '星灵' };
+
+const form = reactive({
+    name: '',
+    battleTag: '',
+    streamUrl: '',
+    platform: ''
+});
+
+const currentUser = getStoredUser();
+const isAdmin = computed(() => currentUser?.role === 'admin' || currentUser?.role === 'super_admin');
 
 async function loadStreams() {
     loading.value = true;
     try {
-        const res = await getSC2Streams();
-        const data = res.data;
-        streams.value = Array.isArray(data) ? data : (data.data || []);
+        const [sc2Res, userRes] = await Promise.all([
+            getSC2Streams(),
+            listUserStreams()
+        ]);
+        
+        const sc2Data = sc2Res.data;
+        const sc2Streams = (Array.isArray(sc2Data) ? sc2Data : (sc2Data.data || [])).map(s => ({ ...s, live: true }));
+        
+        const userData = userRes.data?.data || [];
+        // User added streams are assumed live for now or we can add a check later
+        const userStreams = userData.map(s => ({ ...s, live: true }));
+
+        streams.value = [...userStreams, ...sc2Streams];
     } catch (e) {
+        console.error(e);
         streams.value = [];
     }
     loading.value = false;
+}
+
+async function submitStream() {
+    if (!form.name || !form.streamUrl) {
+        alert('请填写必填项');
+        return;
+    }
+    try {
+        const res = await addStream({ ...form, userId: currentUser?.id });
+        if (res.data.code === 200) {
+            alert('发布成功！审核通过后将永久展示。');
+            showAddForm.value = false;
+            Object.assign(form, { name: '', battleTag: '', streamUrl: '', platform: '' });
+            await loadStreams();
+        } else {
+            alert(res.data.msg);
+        }
+    } catch (e) {
+        alert('发布失败');
+    }
+}
+
+async function handleDelete(id) {
+    if (!confirm('确认删除该直播？')) return;
+    try {
+        await deleteStream(id, currentUser.id);
+        await loadStreams();
+    } catch (e) {
+        alert('删除失败');
+    }
 }
 
 onMounted(loadStreams);
@@ -88,6 +157,70 @@ onMounted(loadStreams);
     color: var(--sc2-text-dim);
     letter-spacing: 4px;
     margin-bottom: 24px;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.add-stream-btn {
+    background: var(--sc2-accent);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 0 15px rgba(0, 180, 216, 0.3);
+}
+
+.add-stream-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(0, 180, 216, 0.5);
+}
+
+.add-stream-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 450px;
+    padding: 30px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--sc2-accent);
+    font-family: 'Orbitron', sans-serif;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--sc2-danger);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
 }
 
 .loading-msg {

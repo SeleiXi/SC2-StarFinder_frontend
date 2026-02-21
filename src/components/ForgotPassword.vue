@@ -5,7 +5,7 @@
         <form @submit.prevent>
             <div class="code-row">
                 <input type="email" class="wInputSmall" placeholder="注册邮箱" required v-model="email">
-                <button class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0">
+                <button type="button" class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0">
                     {{ countdown > 0 ? `${countdown}s` : '发送' }}
                 </button>
             </div>
