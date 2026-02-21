@@ -1,6 +1,6 @@
 <template>
     <div class="find-match">
-        <!-- Your Race -->
+        <!-- Your Race / Commander -->
         <div class="sc2-panel race-panel">
             <div class="panel-header">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
@@ -8,10 +8,11 @@
                     <path
                         d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160Z" />
                 </svg>
-                <span class="panel-title">你的种族</span>
+                <span class="panel-title">{{ mode === 'coop' ? '你的指挥官' : '你的种族' }}</span>
                 <span class="mmr-badge" v-if="mode !== 'coop'">MMR: {{ userMmr }}</span>
             </div>
-            <div class="race-grid">
+            
+            <div class="race-grid" v-if="mode !== 'coop'">
                 <div class="race-card" :class="{ selected: myRace === 'T', terran: myRace === 'T' }"
                     @click="myRace = 'T'">
                     <img src="../assets/icons/terran.png" alt="Terran">
@@ -36,14 +37,22 @@
                     <span class="race-name-en">RANDOM</span>
                 </div>
             </div>
+
+            <div class="commander-grid" v-else>
+                <div v-for="cmd in commanders" :key="cmd.id" class="commander-card" 
+                    :class="{ selected: myCommander === cmd.name }" @click="myCommander = cmd.name">
+                    <div class="commander-portrait-placeholder">{{ cmd.name[0] }}</div>
+                    <span class="commander-name">{{ cmd.name }}</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Opponent Race -->
+        <!-- Opponent Race / Commander -->
         <div class="sc2-panel race-panel" style="margin-top: 20px;">
             <div class="panel-header">
-                <span class="panel-title">匹配者种族</span>
+                <span class="panel-title">{{ mode === 'coop' ? '匹配者建议指挥官 (选填)' : '匹配者种族' }}</span>
             </div>
-            <div class="race-grid">
+            <div class="race-grid" v-if="mode !== 'coop'">
                 <div class="race-card small" :class="{ selected: opponentRace === 'T', terran: opponentRace === 'T' }"
                     @click="opponentRace = 'T'">
                     <img src="../assets/icons/terran.png" alt="Terran">
@@ -64,11 +73,27 @@
                     <span class="race-name">不限</span>
                 </div>
             </div>
+            <div class="commander-grid small" v-else>
+                <div v-for="cmd in commanders" :key="cmd.id" class="commander-card small" 
+                    :class="{ selected: opponentCommander === cmd.name }" @click="opponentCommander = (opponentCommander === cmd.name ? '' : cmd.name)">
+                    <span class="commander-name">{{ cmd.name }}</span>
+                </div>
+                <div class="commander-card small" :class="{ selected: opponentCommander === '' }" @click="opponentCommander = ''">
+                    <span class="commander-name">不限</span>
+                </div>
+            </div>
         </div>
 
         <!-- MMR Range & Actions -->
         <div class="match-controls">
-            <div class="mmr-range">
+            <div class="match-options" v-if="mode !== 'coop' && mode !== '1v1'">
+                <label class="checkbox-container">
+                    <input type="checkbox" v-model="use1v1Mmr">
+                    <span class="checkmark"></span>
+                    <span class="label-text">使用1v1分数匹配</span>
+                </label>
+            </div>
+            <div class="mmr-range" v-if="mode !== 'coop'">
                 <span class="control-label">分差范围</span>
                 <div class="range-input-wrap">
                     <input type="number" v-model.number="mmrRange" class="range-input" placeholder="100">
@@ -134,11 +159,25 @@ const opponentRace = ref('');
 const mmrRange = ref(100);
 const matchResults = ref([]);
 const searched = ref(false);
+const use1v1Mmr = ref(false);
+
+const myCommander = ref('');
+const opponentCommander = ref('');
 
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 
+const commanders = [
+    { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
+    { id: 4, name: '斯旺' }, { id: 5, name: '扎加拉' }, { id: 6, name: '沃拉尊' },
+    { id: 7, name: '卡拉克斯' }, { id: 8, name: '阿巴瑟' }, { id: 9, name: '阿拉纳克' },
+    { id: 10, name: '诺娃' }, { id: 11, name: '斯托科夫' }, { id: 12, name: '菲尼克斯' },
+    { id: 13, name: '德哈卡' }, { id: 14, name: '霍纳与汉' }, { id: 15, name: '泰凯斯' },
+    { id: 16, name: '泽拉图' }, { id: 17, name: '斯台特曼' }, { id: 18, name: '蒙斯克' }
+];
+
 const userMmr = computed(() => {
     if (!props.user) return 0;
+    if (use1v1Mmr.value) return props.user.mmr || 0;
     if (props.mode === '2v2') return props.user.mmr2v2 || 0;
     if (props.mode === '3v3') return props.user.mmr3v3 || 0;
     if (props.mode === '4v4') return props.user.mmr4v4 || 0;
@@ -146,6 +185,7 @@ const userMmr = computed(() => {
 });
 
 function getDisplayMmr(p) {
+    if (use1v1Mmr.value) return p.mmr || 0;
     if (props.mode === '2v2') return p.mmr2v2 || 0;
     if (props.mode === '3v3') return p.mmr3v3 || 0;
     if (props.mode === '4v4') return p.mmr4v4 || 0;
@@ -156,8 +196,15 @@ async function startMatch() {
     searched.value = true;
     const mmr = userMmr.value || 0;
     try {
-        const res = await findMatches(mmr, mmrRange.value, opponentRace.value, props.mode);
-        matchResults.value = res.data.filter(p => props.user && p.id !== props.user.id);
+        if (props.mode === 'coop') {
+            // Task 6: For coop, we match by commander name
+            const res = await findMatches(0, 9999, opponentCommander.value, 'coop');
+            matchResults.value = res.data.filter(p => props.user && p.id !== props.user.id);
+        } else {
+            const queryMode = use1v1Mmr.value ? '1v1' : props.mode;
+            const res = await findMatches(mmr, mmrRange.value, opponentRace.value, queryMode);
+            matchResults.value = res.data.filter(p => props.user && p.id !== props.user.id);
+        }
     } catch (e) {
         matchResults.value = [];
     }
@@ -199,6 +246,113 @@ async function startMatch() {
 
 .header-icon {
     color: var(--sc2-accent);
+}
+
+.match-options {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--sc2-text-bright);
+    user-select: none;
+    gap: 10px;
+}
+
+.checkbox-container input {
+    display: none;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--sc2-border);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.checkbox-container:hover .checkmark {
+    border-color: var(--sc2-accent);
+}
+
+.checkbox-container input:checked + .checkmark {
+    background: var(--sc2-accent);
+    border-color: var(--sc2-accent);
+}
+
+.checkbox-container input:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 14px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.commander-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
+.commander-card {
+    background: rgba(13, 17, 23, 0.6);
+    border: 1px solid var(--sc2-border);
+    border-radius: 6px;
+    padding: 10px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.commander-card:hover {
+    border-color: var(--sc2-accent);
+    background: rgba(0, 180, 216, 0.1);
+}
+
+.commander-card.selected {
+    background: linear-gradient(135deg, rgba(0, 180, 216, 0.2), rgba(0, 180, 216, 0.1));
+    border-color: var(--sc2-accent);
+    box-shadow: 0 0 15px rgba(0, 180, 216, 0.2);
+}
+
+.commander-portrait-placeholder {
+    width: 40px;
+    height: 40px;
+    background: var(--sc2-bg-dark);
+    border: 1px solid var(--sc2-border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--sc2-accent);
+    margin-bottom: 6px;
+}
+
+.commander-name {
+    font-size: 12px;
+    color: var(--sc2-text-bright);
+    white-space: nowrap;
+}
+
+.commander-card.small {
+    padding: 6px 10px;
+}
+
+.commander-grid.small {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
 }
 
 .panel-title {

@@ -29,6 +29,16 @@
                 </div>
 
                 <div class="form-section">
+                    <label>合作模式常用指挥官</label>
+                    <select class="wInput select-input" v-model="form.commander">
+                        <option value="">未选择</option>
+                        <option v-for="cmd in commanders" :key="cmd.id" :value="cmd.name">
+                            {{ cmd.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-section">
                     <label>多地区战网 ID (必填一项以同步 MMR)</label>
                     <div class="tag-input-group">
                         <input type="text" placeholder="国服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagCN">
@@ -45,22 +55,26 @@
                 </div>
 
                 <div class="form-section">
-                    <label>MMR 信息 (自动从战网同步)</label>
-                    <div class="mmr-readonly-grid">
+                    <label>MMR 信息 (可手动调整或同步)</label>
+                    <div class="mmr-edit-grid">
                         <div class="mmr-item">
-                            <span>1v1: {{ form.mmr || 0 }}</span>
+                            <span class="mmr-label">1v1 MMR</span>
+                            <input type="number" v-model.number="form.mmr" class="wInput mmr-input">
                         </div>
                         <div class="mmr-item">
-                            <span>2v2: {{ form.mmr2v2 || 0 }}</span>
+                            <span class="mmr-label">2v2 MMR</span>
+                            <input type="number" v-model.number="form.mmr2v2" class="wInput mmr-input">
                         </div>
                         <div class="mmr-item">
-                            <span>3v3: {{ form.mmr3v3 || 0 }}</span>
+                            <span class="mmr-label">3v3 MMR</span>
+                            <input type="number" v-model.number="form.mmr3v3" class="wInput mmr-input">
                         </div>
                         <div class="mmr-item">
-                            <span>4v4: {{ form.mmr4v4 || 0 }}</span>
+                            <span class="mmr-label">4v4 MMR</span>
+                            <input type="number" v-model.number="form.mmr4v4" class="wInput mmr-input">
                         </div>
                     </div>
-                    <span class="input-hint">MMR 将根据填写的战网ID由系统自动抓取，不可手动修改。</span>
+                    <span class="input-hint">MMR 会根据战网ID自动获取，你也可以手动进行微调。</span>
                 </div>
             </form>
             <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
@@ -90,6 +104,7 @@ const form = ref({
     region: '',
     streamUrl: '',
     signature: '',
+    commander: '',
     mmr: 0,
     mmr2v2: 0,
     mmr3v3: 0,
@@ -97,6 +112,15 @@ const form = ref({
 });
 const errorMsg = ref('');
 const successMsg = ref('');
+
+const commanders = [
+    { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
+    { id: 4, name: '斯旺' }, { id: 5, name: '扎加拉' }, { id: 6, name: '沃拉尊' },
+    { id: 7, name: '卡拉克斯' }, { id: 8, name: '阿巴瑟' }, { id: 9, name: '阿拉纳克' },
+    { id: 10, name: '诺娃' }, { id: 11, name: '斯托科夫' }, { id: 12, name: '菲尼克斯' },
+    { id: 13, name: '德哈卡' }, { id: 14, name: '霍纳与汉' }, { id: 15, name: '泰凯斯' },
+    { id: 16, name: '泽拉图' }, { id: 17, name: '斯台特曼' }, { id: 18, name: '蒙斯克' }
+];
 
 onMounted(() => {
     if (props.user) {
@@ -108,6 +132,7 @@ onMounted(() => {
             battleTagKR: props.user.battleTagKR || '',
             qq: props.user.qq || '',
             race: props.user.race || '',
+            commander: props.user.commander || '',
             region: props.user.region || '',
             streamUrl: props.user.streamUrl || '',
             signature: props.user.signature || '',
@@ -215,21 +240,32 @@ function selectProfilePicture() { /* placeholder */ }
     resize: vertical;
 }
 
-.mmr-readonly-grid {
+.mmr-edit-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
     background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
     border: 1px solid var(--sc2-border);
 }
 
 .mmr-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mmr-label {
     font-family: 'Orbitron', sans-serif;
-    color: var(--sc2-text-bright);
-    font-size: 14px;
-    text-align: center;
+    font-size: 12px;
+    color: var(--sc2-accent);
+}
+
+.mmr-input {
+    margin-top: 0 !important;
+    padding: 8px 12px !important;
+    max-width: 100% !important;
 }
 
 .input-hint {

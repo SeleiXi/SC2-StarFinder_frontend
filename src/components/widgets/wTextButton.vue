@@ -12,6 +12,8 @@ const props = defineProps({
     fontSize: { type: String, default: undefined }
 });
 
+const emit = defineEmits(['click']);
+
 onMounted(() => {
     if (props.fontSize && btnRef.value) {
         btnRef.value.style.fontSize = props.fontSize;

@@ -6,7 +6,7 @@
             <input type="email" v-model="form.email" class="wInput" placeholder="电子邮箱" required>
             
             <div class="code-row">
-                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0;">
+                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0; flex: 1;">
                 <button type="button" class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0" style="margin-top: 0;">
                     {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
                 </button>
@@ -14,7 +14,7 @@
 
             <div class="inline-row">
                 <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (选填，如 Amaris#31262)" style="flex: 2; margin-top: 0;">
-                <select v-model="form.region" class="region-select" style="flex: 1; margin-top: 0;">
+                <select v-model="form.region" class="region-select" style="flex: 1.1; margin-top: 0;">
                     <option value="US">美服</option>
                     <option value="EU">欧服</option>
                     <option value="KR">韩服</option>
@@ -53,19 +53,27 @@ async function handleSendCode() {
         errorMsg.value = '请先输入邮箱';
         return;
     }
+    
+    // Start countdown immediately (Task 1)
+    errorMsg.value = '';
+    successMsg.value = '请求中...';
+    countdown.value = 60;
+    timer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value <= 0) {
+            clearInterval(timer);
+            successMsg.value = '';
+        }
+    }, 1000);
+
     try {
-        await sendEmailCode(form.email);
-        errorMsg.value = '';
+        await sendEmailCode(form.email.trim());
         successMsg.value = '验证码已发送到邮箱';
-        countdown.value = 60;
-        timer = setInterval(() => {
-            countdown.value--;
-            if (countdown.value <= 0) {
-                clearInterval(timer);
-                successMsg.value = '';
-            }
-        }, 1000);
     } catch (e) {
+        // Reset if failed
+        clearInterval(timer);
+        countdown.value = 0;
+        successMsg.value = '';
         errorMsg.value = e.response?.data?.msg || '发送失败，请重试';
     }
 }
@@ -85,7 +93,8 @@ async function handleRegister() {
     }
 
     try {
-        const res = await register(form);
+        // Use spread to ensure we send current values (Task 2)
+        const res = await register({ ...form, email: form.email.trim() });
         if (res.data.code === 200) {
             saveUser(res.data.data);
             successMsg.value = '注册成功！即将跳转...';
@@ -141,6 +150,7 @@ form {
     align-items: center;
     gap: 10px;
     width: 100%;
+    max-width: 360px;
     margin-top: 16px;
 }
 
@@ -149,6 +159,7 @@ form {
     align-items: center;
     gap: 10px;
     width: 100%;
+    max-width: 360px;
     margin-top: 16px;
 }
 
