@@ -3,7 +3,7 @@
         <h2 class="form-title">登录</h2>
         <p class="form-subtitle">WELCOME BACK, COMMANDER</p>
         <form @submit.prevent>
-            <input type="text" v-model="phone" class="wInput" placeholder="手机号" required>
+            <input type="text" v-model="account" class="wInput" placeholder="手机号/昵称" required>
             <input type="password" v-model="password" class="wInput" placeholder="密码" required>
         </form>
         <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
@@ -24,7 +24,7 @@ import '../css/widgets.css';
 
 const emit = defineEmits(['changeMode', 'jumpToRegisterPage', 'userLogin']);
 
-const phone = ref('');
+const account = ref('');
 const password = ref('');
 const errorMsg = ref('');
 
@@ -33,12 +33,12 @@ function registerMessage() { emit('jumpToRegisterPage'); }
 
 async function userLogin() {
     errorMsg.value = '';
-    if (!phone.value || !password.value) {
-        errorMsg.value = '请填写手机号和密码';
+    if (!account.value || !password.value) {
+        errorMsg.value = '请填写账号和密码';
         return;
     }
     try {
-        const res = await login({ phoneNumber: phone.value, password: password.value });
+        const res = await login({ phoneNumber: account.value, password: password.value });
         if (res.data.code === 200) {
             saveUser(res.data.data);
             emit('userLogin');
