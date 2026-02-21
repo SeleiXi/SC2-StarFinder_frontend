@@ -468,9 +468,8 @@ function handleLogout() {
 .sc2-main {
     min-height: 100vh;
     background:
-        radial-gradient(ellipse at 20% 50%, rgba(0, 180, 216, 0.03) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(42, 74, 122, 0.05) 0%, transparent 40%),
-        var(--sc2-bg-deep);
+        linear-gradient(rgba(8, 11, 18, 0.85), rgba(8, 11, 18, 0.85)),
+        url("./assets/pics/main-bg.jpg") center/cover no-repeat fixed;
     position: relative;
 }
 
