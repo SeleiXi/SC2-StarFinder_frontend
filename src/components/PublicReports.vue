@@ -2,7 +2,7 @@
     <div class="reports-page">
         <h1 class="page-title">挂人区</h1>
         <p class="page-subtitle">PLAYER REPORTS</p>
-        <p class="page-desc">记录高分挂机、语言暴力、恶意行为等玩家，供社区参考。</p>
+        <p class="page-desc">记录语言暴力、恶意行为等玩家，供社区参考。</p>
 
         <div class="action-row">
             <div class="search-box">

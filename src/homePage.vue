@@ -197,7 +197,7 @@
             </div>
             <!-- Footer -->
             <footer class="site-footer">
-                网站由 <a href="https://blog.seleixi.site/about/" target="_blank" rel="noopener">SeleiXi</a> 制作，可以给
+                网站由 <a href="https://blog.seleixi.site/" target="_blank" rel="noopener">SeleiXi</a> 制作，可以给
                 <a href="https://github.com/SeleiXi/SC2-StarFinder-Backend" target="_blank" rel="noopener">Github</a> 点个 Star~
             </footer>
         </main>

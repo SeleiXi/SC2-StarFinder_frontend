@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="form-section">
-                    <label>多地区战网 ID (必填一项以同步 MMR)</label>
+                    <label>多地区战网 ID (必填一项以同步 MMR，但目前国服数据无法获取)</label>
                     <div class="tag-input-group">
                         <input type="text" placeholder="国服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagCN">
                         <input type="text" placeholder="美服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagUS">
