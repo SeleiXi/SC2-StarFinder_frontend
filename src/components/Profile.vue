@@ -13,7 +13,7 @@
         <!-- Info Card -->
         <div class="profile-card sc2-panel">
             <div class="card-header">
-                <h1 class="profile-name">{{ user?.email?.split('@')[0] || '未设置' }}</h1>
+                <h1 class="profile-name">{{ user?.name || '未设置昵称' }}</h1>
                 <button class="edit-btn" @click="jumpToProfileEditPage" title="编辑资料">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">

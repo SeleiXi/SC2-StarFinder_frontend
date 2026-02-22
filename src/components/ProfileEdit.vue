@@ -17,6 +17,7 @@
             <form class="edit-form" @submit.prevent="saveProfile">
                 <div class="form-section">
                     <label>基本信息</label>
+                    <input type="text" placeholder="昵称" class="wInput" v-model="form.name">
                     <input type="text" placeholder="QQ" class="wInput" v-model="form.qq">
                     <select class="wInput select-input" v-model="form.race">
                         <option value="" disabled>选择主种族</option>
@@ -93,6 +94,7 @@ const props = defineProps({ user: Object });
 const emit = defineEmits(['profileUpdated']);
 
 const form = ref({
+    name: '',
     battleTagCN: '',
     battleTagUS: '',
     battleTagEU: '',
@@ -112,29 +114,18 @@ const errorMsg = ref('');
 const successMsg = ref('');
 
 const commanders = [
-    { id: 1, name: '雷诺', portrait: 'https://starcraft2coop.com/assets/commanders/raynor/portrait.png' },
-    { id: 2, name: '凯瑞甘', portrait: 'https://starcraft2coop.com/assets/commanders/kerrigan/portrait.png' },
-    { id: 3, name: '阿塔尼斯', portrait: 'https://starcraft2coop.com/assets/commanders/artanis/portrait.png' },
-    { id: 4, name: '斯旺', portrait: 'https://starcraft2coop.com/assets/commanders/swann/portrait.png' },
-    { id: 5, name: '扎加拉', portrait: 'https://starcraft2coop.com/assets/commanders/zagara/portrait.png' },
-    { id: 6, name: '沃拉尊', portrait: 'https://starcraft2coop.com/assets/commanders/vorazun/portrait.png' },
-    { id: 7, name: '卡拉克斯', portrait: 'https://starcraft2coop.com/assets/commanders/karax/portrait.png' },
-    { id: 8, name: '阿巴瑟', portrait: 'https://starcraft2coop.com/assets/commanders/abathur/portrait.png' },
-    { id: 9, name: '阿拉纳克', portrait: 'https://starcraft2coop.com/assets/commanders/alarak/portrait.png' },
-    { id: 10, name: '诺娃', portrait: 'https://starcraft2coop.com/assets/commanders/nova/portrait.png' },
-    { id: 11, name: '斯托科夫', portrait: 'https://starcraft2coop.com/assets/commanders/stukov/portrait.png' },
-    { id: 12, name: '菲尼克斯', portrait: 'https://starcraft2coop.com/assets/commanders/fenix/portrait.png' },
-    { id: 13, name: '德哈卡', portrait: 'https://starcraft2coop.com/assets/commanders/dehaka/portrait.png' },
-    { id: 14, name: '霍纳与汉', portrait: 'https://starcraft2coop.com/assets/commanders/horner/portrait.png' },
-    { id: 15, name: '泰凯斯', portrait: 'https://starcraft2coop.com/assets/commanders/tychus/portrait.png' },
-    { id: 16, name: '泽拉图', portrait: 'https://starcraft2coop.com/assets/commanders/zeratul/portrait.png' },
-    { id: 17, name: '斯台特曼', portrait: 'https://starcraft2coop.com/assets/commanders/stetmann/portrait.png' },
-    { id: 18, name: '蒙斯克', portrait: 'https://starcraft2coop.com/assets/commanders/mengsk/portrait.png' }
+    { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
+    { id: 4, name: '斯旺' }, { id: 5, name: '扎加拉' }, { id: 6, name: '沃拉尊' },
+    { id: 7, name: '卡拉克斯' }, { id: 8, name: '阿巴瑟' }, { id: 9, name: '阿拉纳克' },
+    { id: 10, name: '诺娃' }, { id: 11, name: '斯托科夫' }, { id: 12, name: '菲尼克斯' },
+    { id: 13, name: '德哈卡' }, { id: 14, name: '霍纳与汉' }, { id: 15, name: '泰凯斯' },
+    { id: 16, name: '泽拉图' }, { id: 17, name: '斯台特曼' }, { id: 18, name: '蒙斯克' }
 ];
 
 onMounted(() => {
     if (props.user) {
         form.value = {
+            name: props.user.name || '',
             battleTagCN: props.user.battleTagCN || '',
             battleTagUS: props.user.battleTagUS || '',
             battleTagEU: props.user.battleTagEU || '',

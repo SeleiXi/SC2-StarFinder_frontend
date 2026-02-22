@@ -40,8 +40,8 @@
 
             <div class="commander-grid" v-else>
                 <div v-for="cmd in commanders" :key="cmd.id" class="commander-card" 
-                    :class="{ selected: myCommander === cmd.name }" @click="handleCommanderChange(cmd.name)">
-                    <img :src="cmd.portrait" :alt="cmd.name" class="commander-portrait">
+                    :class="{ selected: myCommander === cmd.name }" @click="myCommander = cmd.name">
+                    <div class="commander-portrait-placeholder">{{ cmd.name[0] }}</div>
                     <span class="commander-name">{{ cmd.name }}</span>
                 </div>
             </div>
@@ -76,11 +76,9 @@
             <div class="commander-grid small" v-else>
                 <div v-for="cmd in commanders" :key="cmd.id" class="commander-card small" 
                     :class="{ selected: opponentCommander === cmd.name }" @click="opponentCommander = (opponentCommander === cmd.name ? '' : cmd.name)">
-                    <img :src="cmd.portrait" :alt="cmd.name" class="commander-portrait small">
                     <span class="commander-name">{{ cmd.name }}</span>
                 </div>
                 <div class="commander-card small" :class="{ selected: opponentCommander === '' }" @click="opponentCommander = ''">
-                    <div class="commander-portrait small placeholder">?</div>
                     <span class="commander-name">不限</span>
                 </div>
             </div>
@@ -123,17 +121,19 @@
             <table class="sc2-table">
                 <thead>
                     <tr>
+                        <th>昵称</th>
                         <th>战网ID</th>
                         <th v-if="mode !== 'coop'">MMR</th>
-                        <th>常用指挥官</th>
+                        <th>种族</th>
                         <th>QQ</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="p in matchResults" :key="p.id">
+                        <td>{{ p.name }}</td>
                         <td>{{ p.battleTag || '-' }}</td>
                         <td v-if="mode !== 'coop'"><span class="mmr-cell">{{ getDisplayMmr(p) }}</span></td>
-                        <td>{{ p.commander || '-' }}</td>
+                        <td>{{ raceMap[p.race] || p.race || '-' }}</td>
                         <td>{{ p.qq || '-' }}</td>
                     </tr>
                 </tbody>
@@ -146,33 +146,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { findMatches, updateCommander, saveUser } from '../api/api.js';
+import { ref, computed } from 'vue';
+import { findMatches } from '../api/api.js';
 
 const props = defineProps({
     mode: String,
     user: Object
 });
-
-const myCommander = ref(props.user?.commander || '');
-
-watch(() => props.user?.commander, (newVal) => {
-    myCommander.value = newVal || '';
-});
-
-async function handleCommanderChange(name) {
-    myCommander.value = name;
-    if (props.user?.id) {
-        try {
-            const res = await updateCommander(props.user.id, name);
-            if (res.data.code === 200) {
-                saveUser(res.data.data);
-            }
-        } catch (e) {
-            console.error('Failed to update commander', e);
-        }
-    }
-}
 
 const myRace = ref('');
 const opponentRace = ref('');
@@ -181,29 +161,18 @@ const matchResults = ref([]);
 const searched = ref(false);
 const use1v1Mmr = ref(false);
 
+const myCommander = ref('');
 const opponentCommander = ref('');
 
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 
 const commanders = [
-    { id: 1, name: '雷诺', portrait: 'https://starcraft2coop.com/assets/commanders/raynor/portrait.png' },
-    { id: 2, name: '凯瑞甘', portrait: 'https://starcraft2coop.com/assets/commanders/kerrigan/portrait.png' },
-    { id: 3, name: '阿塔尼斯', portrait: 'https://starcraft2coop.com/assets/commanders/artanis/portrait.png' },
-    { id: 4, name: '斯旺', portrait: 'https://starcraft2coop.com/assets/commanders/swann/portrait.png' },
-    { id: 5, name: '扎加拉', portrait: 'https://starcraft2coop.com/assets/commanders/zagara/portrait.png' },
-    { id: 6, name: '沃拉尊', portrait: 'https://starcraft2coop.com/assets/commanders/vorazun/portrait.png' },
-    { id: 7, name: '卡拉克斯', portrait: 'https://starcraft2coop.com/assets/commanders/karax/portrait.png' },
-    { id: 8, name: '阿巴瑟', portrait: 'https://starcraft2coop.com/assets/commanders/abathur/portrait.png' },
-    { id: 9, name: '阿拉纳克', portrait: 'https://starcraft2coop.com/assets/commanders/alarak/portrait.png' },
-    { id: 10, name: '诺娃', portrait: 'https://starcraft2coop.com/assets/commanders/nova/portrait.png' },
-    { id: 11, name: '斯托科夫', portrait: 'https://starcraft2coop.com/assets/commanders/stukov/portrait.png' },
-    { id: 12, name: '菲尼克斯', portrait: 'https://starcraft2coop.com/assets/commanders/fenix/portrait.png' },
-    { id: 13, name: '德哈卡', portrait: 'https://starcraft2coop.com/assets/commanders/dehaka/portrait.png' },
-    { id: 14, name: '霍纳与汉', portrait: 'https://starcraft2coop.com/assets/commanders/horner/portrait.png' },
-    { id: 15, name: '泰凯斯', portrait: 'https://starcraft2coop.com/assets/commanders/tychus/portrait.png' },
-    { id: 16, name: '泽拉图', portrait: 'https://starcraft2coop.com/assets/commanders/zeratul/portrait.png' },
-    { id: 17, name: '斯台特曼', portrait: 'https://starcraft2coop.com/assets/commanders/stetmann/portrait.png' },
-    { id: 18, name: '蒙斯克', portrait: 'https://starcraft2coop.com/assets/commanders/mengsk/portrait.png' }
+    { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
+    { id: 4, name: '斯旺' }, { id: 5, name: '扎加拉' }, { id: 6, name: '沃拉尊' },
+    { id: 7, name: '卡拉克斯' }, { id: 8, name: '阿巴瑟' }, { id: 9, name: '阿拉纳克' },
+    { id: 10, name: '诺娃' }, { id: 11, name: '斯托科夫' }, { id: 12, name: '菲尼克斯' },
+    { id: 13, name: '德哈卡' }, { id: 14, name: '霍纳与汉' }, { id: 15, name: '泰凯斯' },
+    { id: 16, name: '泽拉图' }, { id: 17, name: '斯台特曼' }, { id: 18, name: '蒙斯克' }
 ];
 
 const userMmr = computed(() => {
@@ -356,27 +325,19 @@ async function startMatch() {
     box-shadow: 0 0 15px rgba(0, 180, 216, 0.2);
 }
 
-.commander-portrait {
-    width: 60px;
-    height: 60px;
+.commander-portrait-placeholder {
+    width: 40px;
+    height: 40px;
+    background: var(--sc2-bg-dark);
     border: 1px solid var(--sc2-border);
     border-radius: 4px;
-    margin-bottom: 6px;
-    object-fit: cover;
-}
-
-.commander-portrait.small {
-    width: 32px;
-    height: 32px;
-}
-
-.commander-portrait.placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--sc2-bg-dark);
-    font-size: 16px;
-    color: var(--sc2-text-dim);
+    font-size: 20px;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--sc2-accent);
+    margin-bottom: 6px;
 }
 
 .commander-name {

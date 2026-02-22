@@ -45,10 +45,6 @@ export function findMatches(mmr, range, race, mode) {
     return api.get('/user/match', { params });
 }
 
-export function updateCommander(userId, commander) {
-    return api.put(`/user/${userId}/profile`, { commander });
-}
-
 // ============ Cheater APIs ============
 
 export function reportCheater(data, userId) {
