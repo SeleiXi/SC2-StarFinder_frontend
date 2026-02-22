@@ -161,8 +161,8 @@
             <div class="mobile-overlay" v-if="!sidebarCollapsed" @click="sidebarCollapsed = true"></div>
             <div class="main-content">
                 <findMatch v-if="currentId >= 2 && currentId <= 5 && !profileEditMode"
-                    :mode="`${currentId - 1}v${currentId - 1}`" :user="currentUser"></findMatch>
-                <findMatch v-if="currentId == 6 && !profileEditMode" mode="coop" :user="currentUser"></findMatch>
+                    :mode="`${currentId - 1}v${currentId - 1}`" :user="currentUser" @profileUpdated="onProfileUpdated"></findMatch>
+                <findMatch v-if="currentId == 6 && !profileEditMode" mode="coop" :user="currentUser" @profileUpdated="onProfileUpdated"></findMatch>
                 <matchInfo v-if="currentId == 7 && !profileEditMode" :user="currentUser"></matchInfo>
                 <Profile v-if="currentId == 12 && !profileEditMode" @jumpToProfileEditPage="jumpToProfileEditPage"
                     :user="currentUser"></Profile>

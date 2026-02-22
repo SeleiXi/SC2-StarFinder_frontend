@@ -9,7 +9,48 @@
                         d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160Z" />
                 </svg>
                 <span class="panel-title">{{ mode === 'coop' ? '你的指挥官' : '你的种族' }}</span>
-                <span class="mmr-badge" v-if="mode !== 'coop'">MMR: {{ userMmr }}</span>
+                <span class="mmr-badge" v-if="mode !== 'coop'">
+                    MMR: {{ userMmr }}
+                    <button class="mmr-edit-btn" @click.stop="showMmrEdit ? (showMmrEdit = false) : openMmrEdit()" title="编辑MMR">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                        </svg>
+                    </button>
+                </span>
+            </div>
+            <!-- Inline MMR editing panel -->
+            <div class="mmr-edit-panel" v-if="showMmrEdit && mode !== 'coop'">
+                <div class="mmr-edit-grid">
+                    <div class="mmr-edit-field">
+                        <label>1v1 主</label>
+                        <input type="number" v-model.number="editMmr.mmr" class="mmr-edit-input" placeholder="0">
+                    </div>
+                    <div class="mmr-edit-field">
+                        <label>人族</label>
+                        <input type="number" v-model.number="editMmr.mmrTerran" class="mmr-edit-input" placeholder="0">
+                    </div>
+                    <div class="mmr-edit-field">
+                        <label>虫族</label>
+                        <input type="number" v-model.number="editMmr.mmrZerg" class="mmr-edit-input" placeholder="0">
+                    </div>
+                    <div class="mmr-edit-field">
+                        <label>神族</label>
+                        <input type="number" v-model.number="editMmr.mmrProtoss" class="mmr-edit-input" placeholder="0">
+                    </div>
+                    <div class="mmr-edit-field">
+                        <label>随机</label>
+                        <input type="number" v-model.number="editMmr.mmrRandom" class="mmr-edit-input" placeholder="0">
+                    </div>
+                    <div class="mmr-edit-field" v-if="mode === '2v2' || mode === '3v3' || mode === '4v4'">
+                        <label>{{ mode }}</label>
+                        <input type="number" v-model.number="editMmr.mmrTeam" class="mmr-edit-input" placeholder="0">
+                    </div>
+                </div>
+                <div class="mmr-edit-actions">
+                    <button class="mmr-save-btn" @click="saveMmr" :disabled="mmrSaving">{{ mmrSaving ? '保存中...' : '保存' }}</button>
+                    <button class="mmr-cancel-btn" @click="showMmrEdit = false">取消</button>
+                    <span class="mmr-save-msg" v-if="mmrSaveMsg">{{ mmrSaveMsg }}</span>
+                </div>
             </div>
             
             <div class="race-grid" v-if="mode !== 'coop'">
@@ -146,12 +187,13 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { findMatches } from '../api/api.js';
+import { findMatches, updateProfile, saveUser } from '../api/api.js';
 
 const props = defineProps({
     mode: String,
     user: Object
 });
+const emit = defineEmits(['profileUpdated']);
 
 const myRace = ref('');
 const opponentRace = ref('');
@@ -163,9 +205,59 @@ const use1v1Mmr = ref(false);
 const myCommander = ref('');
 const opponentCommander = ref('');
 
+// Inline MMR editing
+const showMmrEdit = ref(false);
+const mmrSaving = ref(false);
+const mmrSaveMsg = ref('');
+const editMmr = ref({
+    mmr: 0, mmrTerran: 0, mmrZerg: 0, mmrProtoss: 0, mmrRandom: 0, mmrTeam: 0
+});
+
+function openMmrEdit() {
+    if (!props.user) return;
+    editMmr.value = {
+        mmr: props.user.mmr || 0,
+        mmrTerran: props.user.mmrTerran || 0,
+        mmrZerg: props.user.mmrZerg || 0,
+        mmrProtoss: props.user.mmrProtoss || 0,
+        mmrRandom: props.user.mmrRandom || 0,
+        mmrTeam: (props.mode === '2v2' ? props.user.mmr2v2 : props.mode === '3v3' ? props.user.mmr3v3 : props.user.mmr4v4) || 0
+    };
+    showMmrEdit.value = true;
+}
+
+async function saveMmr() {
+    if (!props.user) return;
+    mmrSaving.value = true;
+    mmrSaveMsg.value = '';
+    try {
+        const payload = {
+            mmr: editMmr.value.mmr,
+            mmrTerran: editMmr.value.mmrTerran,
+            mmrZerg: editMmr.value.mmrZerg,
+            mmrProtoss: editMmr.value.mmrProtoss,
+            mmrRandom: editMmr.value.mmrRandom
+        };
+        if (props.mode === '2v2') payload.mmr2v2 = editMmr.value.mmrTeam;
+        else if (props.mode === '3v3') payload.mmr3v3 = editMmr.value.mmrTeam;
+        else if (props.mode === '4v4') payload.mmr4v4 = editMmr.value.mmrTeam;
+        const res = await updateProfile(props.user.id, payload);
+        const updatedUser = res.data.data;
+        saveUser(updatedUser);
+        emit('profileUpdated', updatedUser);
+        mmrSaveMsg.value = '已保存 ✓';
+        setTimeout(() => { mmrSaveMsg.value = ''; showMmrEdit.value = false; }, 1500);
+    } catch (e) {
+        mmrSaveMsg.value = '保存失败';
+    } finally {
+        mmrSaving.value = false;
+    }
+}
+
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 
-const cmdImg = (key) => new URL(`../assets/commanders/${key}.webp`, import.meta.url).href;
+// webpack/Vue CLI: use require() instead of import.meta.url (Vite-only)
+const cmdImg = (key) => require(`../assets/commanders/${key}.webp`);
 
 const commanders = [
     { id: 1,  name: '雷诺',   img: cmdImg('raynor') },
@@ -407,11 +499,107 @@ async function startMatch() {
 
 .mmr-badge {
     margin-left: auto;
-    padding: 4px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
     background: rgba(0, 180, 216, 0.1);
     border: 1px solid rgba(0, 180, 216, 0.25);
     border-radius: 20px;
     font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--sc2-accent);
+}
+
+.mmr-edit-btn {
+    background: none;
+    border: none;
+    color: var(--sc2-accent);
+    cursor: pointer;
+    padding: 2px;
+    margin-left: 2px;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s;
+}
+.mmr-edit-btn:hover { opacity: 1; }
+
+.mmr-edit-panel {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--sc2-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+.mmr-edit-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.mmr-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mmr-edit-field label {
+    font-size: 11px;
+    color: var(--sc2-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.mmr-edit-input {
+    width: 80px;
+    padding: 6px 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: var(--sc2-text-bright);
+    background: var(--sc2-bg-dark);
+    border: 1px solid var(--sc2-border);
+    border-radius: 4px;
+    text-align: center;
+}
+.mmr-edit-input:focus { border-color: var(--sc2-accent); outline: none; }
+
+.mmr-edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mmr-save-btn {
+    padding: 6px 18px;
+    background: var(--sc2-accent);
+    color: var(--sc2-bg-deep);
+    border: none;
+    border-radius: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.mmr-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.mmr-cancel-btn {
+    padding: 6px 14px;
+    background: transparent;
+    color: var(--sc2-text-dim);
+    border: 1px solid var(--sc2-border);
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.mmr-cancel-btn:hover { border-color: var(--sc2-accent); color: var(--sc2-accent); }
+
+.mmr-save-msg {
     font-size: 13px;
     color: var(--sc2-accent);
 }
