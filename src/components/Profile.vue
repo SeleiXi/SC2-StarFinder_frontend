@@ -13,7 +13,7 @@
         <!-- Info Card -->
         <div class="profile-card sc2-panel">
             <div class="card-header">
-                <h1 class="profile-name">{{ user?.name || '未设置昵称' }}</h1>
+                <h1 class="profile-name">{{ user?.battleTag || user?.email || '未设置BattleTag' }}</h1>
                 <button class="edit-btn" @click="jumpToProfileEditPage" title="编辑资料">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
@@ -51,22 +51,38 @@
                 </div>
             </div>
 
-            <div class="mmr-display-section" v-if="user?.mmr || user?.mmr2v2 || user?.mmr3v3 || user?.mmr4v4">
+            <div class="mmr-display-section" v-if="user?.mmr || user?.mmrTerran || user?.mmrZerg || user?.mmrProtoss || user?.mmrRandom || user?.mmr2v2 || user?.mmr3v3 || user?.mmr4v4">
                 <h3>MMR 详情 (自动同步)</h3>
                 <div class="mmr-grid">
-                    <div class="mmr-box">
-                        <div class="mmr-label">1v1</div>
+                    <div class="mmr-box" v-if="user?.mmr">
+                        <div class="mmr-label">1v1 (主)</div>
                         <div class="mmr-value">{{ user?.mmr || 0 }}</div>
                     </div>
-                    <div class="mmr-box">
+                    <div class="mmr-box" v-if="user?.mmrTerran">
+                        <div class="mmr-label">1v1 人族</div>
+                        <div class="mmr-value">{{ user?.mmrTerran || 0 }}</div>
+                    </div>
+                    <div class="mmr-box" v-if="user?.mmrZerg">
+                        <div class="mmr-label">1v1 虫族</div>
+                        <div class="mmr-value">{{ user?.mmrZerg || 0 }}</div>
+                    </div>
+                    <div class="mmr-box" v-if="user?.mmrProtoss">
+                        <div class="mmr-label">1v1 神族</div>
+                        <div class="mmr-value">{{ user?.mmrProtoss || 0 }}</div>
+                    </div>
+                    <div class="mmr-box" v-if="user?.mmrRandom">
+                        <div class="mmr-label">1v1 随机</div>
+                        <div class="mmr-value">{{ user?.mmrRandom || 0 }}</div>
+                    </div>
+                    <div class="mmr-box" v-if="user?.mmr2v2">
                         <div class="mmr-label">2v2</div>
                         <div class="mmr-value">{{ user?.mmr2v2 || 0 }}</div>
                     </div>
-                    <div class="mmr-box">
+                    <div class="mmr-box" v-if="user?.mmr3v3">
                         <div class="mmr-label">3v3</div>
                         <div class="mmr-value">{{ user?.mmr3v3 || 0 }}</div>
                     </div>
-                    <div class="mmr-box">
+                    <div class="mmr-box" v-if="user?.mmr4v4">
                         <div class="mmr-label">4v4</div>
                         <div class="mmr-value">{{ user?.mmr4v4 || 0 }}</div>
                     </div>

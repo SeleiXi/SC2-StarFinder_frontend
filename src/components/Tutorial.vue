@@ -12,20 +12,20 @@
 
         <div v-if="tutorials.length > 0" class="tutorial-list">
             <div v-for="t in tutorials" :key="t.id" class="tutorial-card sc2-panel">
-                <div class="card-title">
-                    {{ t.title }}
-                    <small v-if="t.author" class="card-author">by {{ t.author }}</small>
-                </div>
-                <!-- <iframe :src="t.url" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"
-                    class="tutorial-iframe"></iframe> -->
-                <div class="video-link-area">
-                    <a :href="t.url" target="_blank" class="sc2-btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                            fill="currentColor">
-                            <path d="M320-200v-560l440 280-440 280Z" />
-                        </svg>
-                        <span>立即观看视频</span>
-                    </a>
+                <div class="card-header-row">
+                    <div class="card-title">
+                        {{ t.title }}
+                        <small v-if="t.author" class="card-author">by {{ t.author }}</small>
+                    </div>
+                    <div class="video-link-area">
+                        <a :href="t.url" target="_blank" class="sc2-btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                                fill="currentColor">
+                                <path d="M320-200v-560l440 280-440 280Z" />
+                            </svg>
+                            <span>立即观看视频</span>
+                        </a>
+                    </div>
                 </div>
                 <p v-if="t.description" class="card-desc">{{ t.description }}</p>
             </div>
@@ -130,21 +130,28 @@ onMounted(() => loadTutorials(''));
     opacity: 0.5;
 }
 
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
 .card-title {
     font-size: 18px;
     font-weight: 600;
     color: var(--sc2-text-bright);
-    margin-bottom: 16px;
 }
 
 .card-author {
     font-size: 13px;
     color: var(--sc2-text-dim);
     font-weight: 400;
+    margin-left: 8px;
 }
 
 .video-link-area {
-    margin: 10px 0;
+    margin: 0;
 }
 
 .sc2-btn-secondary {

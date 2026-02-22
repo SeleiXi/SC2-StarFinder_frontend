@@ -12,9 +12,8 @@
         <div v-if="activeTab === 'users'" class="tab-content">
             <!-- Edit User Form -->
             <div v-if="editingUser" class="add-form" style="max-width: 600px;">
-                <h3>编辑用户: {{ editingUser.name }}</h3>
+                <h3>编辑用户: {{ editingUser.email }}</h3>
                 <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <input v-model="editForm.name" placeholder="昵称" class="wInput" style="flex:1" />
                     <input v-model="editForm.email" placeholder="邮箱" class="wInput" style="flex:1" disabled />
                 </div>
                 <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -41,7 +40,6 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>用户名</th>
                             <th>邮箱</th>
                             <th>BattleTag</th>
                             <th>MMR</th>
@@ -52,7 +50,6 @@
                     <tbody>
                         <tr v-for="u in users" :key="u.id">
                             <td>{{ u.id }}</td>
-                            <td>{{ u.name }}</td>
                             <td>{{ u.email }}</td>
                             <td>{{ u.battleTag }}</td>
                             <td>{{ u.mmr }}</td>
@@ -221,12 +218,11 @@ const showTutorialForm = ref(false);
 const tForm = reactive({ title: '', url: '', category: '', description: '', author: '' });
 
 const editingUser = ref(null);
-const editForm = reactive({ name: '', email: '', battleTag: '', password: '', mmr: 0, region: 'US' });
+const editForm = reactive({ email: '', battleTag: '', password: '', mmr: 0, region: 'US' });
 
 function startEditUser(user) {
     editingUser.value = user;
     Object.assign(editForm, {
-        name: user.name,
         email: user.email,
         battleTag: user.battleTag,
         password: '', // Reset password input

@@ -57,15 +57,6 @@
                     <span class="nav-label">赛事宣传</span>
                 </a>
 
-                <!-- AI 战略助手 -->
-                <a href="#" class="nav-item" :class="{ active: currentId === 14 }" @click.prevent="switchPage(14)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor">
-                        <path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3l-48 48q-3-1-6.5-1t-6.5-1q-117 0-198.5 81.5T193-511q0 117 81.5 198.5T473-231q117 0 198.5-81.5T753-511q0-14-1.5-27.5T748-565l48-48q5 13 8.5 26.5T808-560q0 150-105 255T448-200Z" />
-                    </svg>
-                    <span class="nav-label">AI 战略助手</span>
-                </a>
-
                 <!-- MMR 查询 -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 15 }" @click.prevent="switchPage(15)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -135,7 +126,7 @@
                 <a href="#" class="nav-item user-item" v-if="isLogin" :class="{ active: currentId === 12 }"
                     @click.prevent="switchPage(12)">
                     <div class="avatar-mini"></div>
-                    <span class="nav-label">{{ currentUser?.name || '个人信息' }}</span>
+                    <span class="nav-label">{{ currentUser?.battleTag || currentUser?.email || '个人信息' }}</span>
                 </a>
                 <button class="nav-item logout-btn" v-if="isLogin" @click="handleLogout"
                     style="margin-top: 10px; border: none; background: transparent; width: 100%; cursor: pointer;">

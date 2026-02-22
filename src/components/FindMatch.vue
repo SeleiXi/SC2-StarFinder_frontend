@@ -41,7 +41,7 @@
             <div class="commander-grid" v-else>
                 <div v-for="cmd in commanders" :key="cmd.id" class="commander-card" 
                     :class="{ selected: myCommander === cmd.name }" @click="myCommander = cmd.name">
-                    <div class="commander-portrait-placeholder">{{ cmd.name[0] }}</div>
+                    <img :src="cmd.img" :alt="cmd.name" class="commander-portrait-img">
                     <span class="commander-name">{{ cmd.name }}</span>
                 </div>
             </div>
@@ -76,6 +76,7 @@
             <div class="commander-grid small" v-else>
                 <div v-for="cmd in commanders" :key="cmd.id" class="commander-card small" 
                     :class="{ selected: opponentCommander === cmd.name }" @click="opponentCommander = (opponentCommander === cmd.name ? '' : cmd.name)">
+                    <img :src="cmd.img" :alt="cmd.name" class="commander-portrait-img small">
                     <span class="commander-name">{{ cmd.name }}</span>
                 </div>
                 <div class="commander-card small" :class="{ selected: opponentCommander === '' }" @click="opponentCommander = ''">
@@ -121,19 +122,17 @@
             <table class="sc2-table">
                 <thead>
                     <tr>
-                        <th>昵称</th>
                         <th>战网ID</th>
                         <th v-if="mode !== 'coop'">MMR</th>
-                        <th>种族</th>
+                        <th>{{ mode === 'coop' ? '常用指挥官' : '种族' }}</th>
                         <th>QQ</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="p in matchResults" :key="p.id">
-                        <td>{{ p.name }}</td>
                         <td>{{ p.battleTag || '-' }}</td>
                         <td v-if="mode !== 'coop'"><span class="mmr-cell">{{ getDisplayMmr(p) }}</span></td>
-                        <td>{{ raceMap[p.race] || p.race || '-' }}</td>
+                        <td>{{ mode === 'coop' ? (p.commander || '-') : (raceMap[p.race] || p.race || '-') }}</td>
                         <td>{{ p.qq || '-' }}</td>
                     </tr>
                 </tbody>
@@ -166,18 +165,40 @@ const opponentCommander = ref('');
 
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 
+const cmdImg = (key) => new URL(`../assets/commanders/${key}.webp`, import.meta.url).href;
+
 const commanders = [
-    { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
-    { id: 4, name: '斯旺' }, { id: 5, name: '扎加拉' }, { id: 6, name: '沃拉尊' },
-    { id: 7, name: '卡拉克斯' }, { id: 8, name: '阿巴瑟' }, { id: 9, name: '阿拉纳克' },
-    { id: 10, name: '诺娃' }, { id: 11, name: '斯托科夫' }, { id: 12, name: '菲尼克斯' },
-    { id: 13, name: '德哈卡' }, { id: 14, name: '霍纳与汉' }, { id: 15, name: '泰凯斯' },
-    { id: 16, name: '泽拉图' }, { id: 17, name: '斯台特曼' }, { id: 18, name: '蒙斯克' }
+    { id: 1,  name: '雷诺',   img: cmdImg('raynor') },
+    { id: 2,  name: '凯瑞甘', img: cmdImg('kerrigan') },
+    { id: 3,  name: '阿塔尼斯', img: cmdImg('artanis') },
+    { id: 4,  name: '斯旺',   img: cmdImg('swann') },
+    { id: 5,  name: '扎加拉', img: cmdImg('zagara') },
+    { id: 6,  name: '沃拉尊', img: cmdImg('vorazun') },
+    { id: 7,  name: '卡拉克斯', img: cmdImg('karax') },
+    { id: 8,  name: '阿巴瑟', img: cmdImg('abathur') },
+    { id: 9,  name: '阿拉纳克', img: cmdImg('alarak') },
+    { id: 10, name: '诺娃',   img: cmdImg('nova') },
+    { id: 11, name: '斯托科夫', img: cmdImg('stukov') },
+    { id: 12, name: '菲尼克斯', img: cmdImg('fenix') },
+    { id: 13, name: '德哈卡', img: cmdImg('dehaka') },
+    { id: 14, name: '霍纳与汉', img: cmdImg('hanhorner') },
+    { id: 15, name: '泰凯斯', img: cmdImg('tychus') },
+    { id: 16, name: '泽拉图', img: cmdImg('zeratul') },
+    { id: 17, name: '斯台特曼', img: cmdImg('stetmann') },
+    { id: 18, name: '蒙斯克', img: cmdImg('mengsk') },
 ];
 
 const userMmr = computed(() => {
     if (!props.user) return 0;
-    if (use1v1Mmr.value) return props.user.mmr || 0;
+    if (use1v1Mmr.value || props.mode === '1v1') {
+        // Use per-race MMR when a race is selected for 1v1
+        const raceToMmr = { 
+            T: props.user.mmrTerran, Z: props.user.mmrZerg, 
+            P: props.user.mmrProtoss, R: props.user.mmrRandom 
+        };
+        const perRace = myRace.value ? raceToMmr[myRace.value] : null;
+        return perRace || props.user.mmr || 0;
+    }
     if (props.mode === '2v2') return props.user.mmr2v2 || 0;
     if (props.mode === '3v3') return props.user.mmr3v3 || 0;
     if (props.mode === '4v4') return props.user.mmr4v4 || 0;
@@ -185,7 +206,12 @@ const userMmr = computed(() => {
 });
 
 function getDisplayMmr(p) {
-    if (use1v1Mmr.value) return p.mmr || 0;
+    if (use1v1Mmr.value || props.mode === '1v1') {
+        // Show per-race MMR for the selected opponent race
+        const raceToMmr = { T: p.mmrTerran, Z: p.mmrZerg, P: p.mmrProtoss, R: p.mmrRandom };
+        const perRace = opponentRace.value ? raceToMmr[opponentRace.value] : null;
+        return perRace || p.mmr || 0;
+    }
     if (props.mode === '2v2') return p.mmr2v2 || 0;
     if (props.mode === '3v3') return p.mmr3v3 || 0;
     if (props.mode === '4v4') return p.mmr4v4 || 0;
@@ -338,6 +364,22 @@ async function startMatch() {
     font-family: 'Orbitron', sans-serif;
     color: var(--sc2-accent);
     margin-bottom: 6px;
+}
+
+.commander-portrait-img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--sc2-border);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.commander-portrait-img.small {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 3px;
 }
 
 .commander-name {

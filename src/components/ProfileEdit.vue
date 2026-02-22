@@ -17,7 +17,6 @@
             <form class="edit-form" @submit.prevent="saveProfile">
                 <div class="form-section">
                     <label>基本信息</label>
-                    <input type="text" placeholder="昵称" class="wInput" v-model="form.name">
                     <input type="text" placeholder="QQ" class="wInput" v-model="form.qq">
                     <select class="wInput select-input" v-model="form.race">
                         <option value="" disabled>选择主种族</option>
@@ -58,8 +57,24 @@
                     <label>MMR 信息 (可手动调整或同步)</label>
                     <div class="mmr-edit-grid">
                         <div class="mmr-item">
-                            <span class="mmr-label">1v1 MMR</span>
+                            <span class="mmr-label">1v1 MMR (主)</span>
                             <input type="number" v-model.number="form.mmr" class="wInput mmr-input">
+                        </div>
+                        <div class="mmr-item">
+                            <span class="mmr-label">1v1 人族</span>
+                            <input type="number" v-model.number="form.mmrTerran" class="wInput mmr-input">
+                        </div>
+                        <div class="mmr-item">
+                            <span class="mmr-label">1v1 虫族</span>
+                            <input type="number" v-model.number="form.mmrZerg" class="wInput mmr-input">
+                        </div>
+                        <div class="mmr-item">
+                            <span class="mmr-label">1v1 神族</span>
+                            <input type="number" v-model.number="form.mmrProtoss" class="wInput mmr-input">
+                        </div>
+                        <div class="mmr-item">
+                            <span class="mmr-label">1v1 随机</span>
+                            <input type="number" v-model.number="form.mmrRandom" class="wInput mmr-input">
                         </div>
                         <div class="mmr-item">
                             <span class="mmr-label">2v2 MMR</span>
@@ -94,7 +109,6 @@ const props = defineProps({ user: Object });
 const emit = defineEmits(['profileUpdated']);
 
 const form = ref({
-    name: '',
     battleTagCN: '',
     battleTagUS: '',
     battleTagEU: '',
@@ -106,6 +120,10 @@ const form = ref({
     signature: '',
     commander: '',
     mmr: 0,
+    mmrTerran: 0,
+    mmrZerg: 0,
+    mmrProtoss: 0,
+    mmrRandom: 0,
     mmr2v2: 0,
     mmr3v3: 0,
     mmr4v4: 0
@@ -125,7 +143,6 @@ const commanders = [
 onMounted(() => {
     if (props.user) {
         form.value = {
-            name: props.user.name || '',
             battleTagCN: props.user.battleTagCN || '',
             battleTagUS: props.user.battleTagUS || '',
             battleTagEU: props.user.battleTagEU || '',
@@ -137,6 +154,10 @@ onMounted(() => {
             streamUrl: props.user.streamUrl || '',
             signature: props.user.signature || '',
             mmr: props.user.mmr || 0,
+            mmrTerran: props.user.mmrTerran || 0,
+            mmrZerg: props.user.mmrZerg || 0,
+            mmrProtoss: props.user.mmrProtoss || 0,
+            mmrRandom: props.user.mmrRandom || 0,
             mmr2v2: props.user.mmr2v2 || 0,
             mmr3v3: props.user.mmr3v3 || 0,
             mmr4v4: props.user.mmr4v4 || 0

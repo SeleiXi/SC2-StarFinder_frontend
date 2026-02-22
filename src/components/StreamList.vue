@@ -81,8 +81,35 @@ const form = reactive({
 const currentUser = getStoredUser();
 const isAdmin = computed(() => currentUser?.role === 'admin' || currentUser?.role === 'super_admin');
 
+const STREAMS_CACHE_KEY = 'sc2_streams_cache';
+const STREAMS_CACHE_TTL = 60000; // 1 minute
+
+function getCachedStreams() {
+    try {
+        const cached = localStorage.getItem(STREAMS_CACHE_KEY);
+        if (!cached) return null;
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < STREAMS_CACHE_TTL) return data;
+    } catch (e) {}
+    return null;
+}
+
+function cacheStreams(data) {
+    try {
+        localStorage.setItem(STREAMS_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch (e) {}
+}
+
 async function loadStreams() {
-    loading.value = true;
+    // Show cached data immediately for fast initial render
+    const cached = getCachedStreams();
+    if (cached && cached.length > 0) {
+        streams.value = cached;
+        loading.value = false;
+    } else {
+        loading.value = true;
+    }
+
     try {
         const [sc2Res, userRes] = await Promise.all([
             getSC2Streams(),
@@ -93,13 +120,14 @@ async function loadStreams() {
         const sc2Streams = (Array.isArray(sc2Data) ? sc2Data : (sc2Data.data || [])).map(s => ({ ...s, live: true }));
         
         const userData = userRes.data?.data || [];
-        // User added streams are assumed live for now or we can add a check later
         const userStreams = userData.map(s => ({ ...s, live: true }));
 
-        streams.value = [...userStreams, ...sc2Streams];
+        const combined = [...userStreams, ...sc2Streams];
+        streams.value = combined;
+        cacheStreams(combined);
     } catch (e) {
         console.error(e);
-        streams.value = [];
+        if (!cached) streams.value = [];
     }
     loading.value = false;
 }

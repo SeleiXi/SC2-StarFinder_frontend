@@ -3,7 +3,7 @@
         <h2 class="form-title">登录</h2>
         <p class="form-subtitle">WELCOME BACK, COMMANDER</p>
         <form @submit.prevent>
-            <input type="text" v-model="account" class="wInput" placeholder="电子邮箱 / 昵称" required>
+            <input type="text" v-model="account" class="wInput" placeholder="电子邮箱" required>
             <input type="password" v-model="password" class="wInput" placeholder="密码" required>
         </form>
         <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
