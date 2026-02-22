@@ -3,8 +3,12 @@
         <h2 class="panel-title">MMR 分数查询</h2>
         <p class="panel-desc">输入战网ID查询各服实时MMR（如：playerName#1234）</p>
 
+        <div class="cn-notice">
+            <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
+            <span>注意：国服（CN）数据暂不受支持，如需查询国服 MMR 请手动在个人资料中填写。美服/欧服/韩服数据可正常查询。</span>
+        </div>
         <div class="search-box">
-            <input type="text" v-model="battleTag" placeholder="玩家名称 (支持不带#数字)" class="wInput" @keyup.enter="search">
+            <input type="text" v-model="battleTag" placeholder="玩家名称 (支持不带#数字，如：PlayerName 或 PlayerName#1234)" class="wInput" @keyup.enter="search">
             <button class="sc2-btn-action" @click="search" :disabled="loading">
                 {{ loading ? '查询中...' : '查询' }}
             </button>
@@ -236,6 +240,26 @@ async function search() {
 .error-msg {
     color: var(--sc2-danger);
     margin-top: 20px;
+}
+
+.cn-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(255, 160, 0, 0.08);
+    border: 1px solid rgba(255, 160, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #ffa000;
+    line-height: 1.5;
+}
+
+.cn-notice svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    fill: #ffa000;
 }
 
 @keyframes fadeIn {

@@ -8,7 +8,7 @@
                     <path
                         d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160Z" />
                 </svg>
-                <span class="panel-title">{{ mode === 'coop' ? '你的指挥官' : '你的种族' }}</span>
+                <span class="panel-title">{{ mode === 'coop' ? '修改常用指挥官' : '你的种族' }}</span>
                 <span class="mmr-badge" v-if="mode !== 'coop'">
                     MMR: {{ userMmr }}
                     <button class="mmr-edit-btn" @click.stop="showMmrEdit ? (showMmrEdit = false) : openMmrEdit()" title="编辑MMR">
@@ -21,10 +21,6 @@
             <!-- Inline MMR editing panel -->
             <div class="mmr-edit-panel" v-if="showMmrEdit && mode !== 'coop'">
                 <div class="mmr-edit-grid">
-                    <div class="mmr-edit-field">
-                        <label>1v1 主</label>
-                        <input type="number" v-model.number="editMmr.mmr" class="mmr-edit-input" placeholder="0">
-                    </div>
                     <div class="mmr-edit-field">
                         <label>人族</label>
                         <input type="number" v-model.number="editMmr.mmrTerran" class="mmr-edit-input" placeholder="0">
@@ -160,12 +156,14 @@
                 <span class="panel-title">匹配结果</span>
                 <span class="result-count">{{ matchResults.length }} 玩家</span>
             </div>
-            <table class="sc2-table">
+                <table class="sc2-table">
                 <thead>
                     <tr>
                         <th>战网ID</th>
                         <th v-if="mode !== 'coop'">MMR</th>
                         <th>{{ mode === 'coop' ? '常用指挥官' : '种族' }}</th>
+                        <th v-if="mode === 'coop'">等级</th>
+                        <th>个人描述</th>
                         <th>QQ</th>
                     </tr>
                 </thead>
@@ -174,6 +172,8 @@
                         <td>{{ p.battleTag || '-' }}</td>
                         <td v-if="mode !== 'coop'"><span class="mmr-cell">{{ getDisplayMmr(p) }}</span></td>
                         <td>{{ mode === 'coop' ? (p.commander || '-') : (raceMap[p.race] || p.race || '-') }}</td>
+                        <td v-if="mode === 'coop'"><span class="coop-level-badge" v-if="p.coopLevel">{{ p.coopLevel }}</span><span v-else>-</span></td>
+                        <td class="desc-cell">{{ p.signature || '-' }}</td>
                         <td>{{ p.qq || '-' }}</td>
                     </tr>
                 </tbody>
@@ -186,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { findMatches, updateProfile, saveUser } from '../api/api.js';
 
 const props = defineProps({
@@ -195,7 +195,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['profileUpdated']);
 
-const myRace = ref('');
+const myRace = ref('T'); // default to Terran
 const opponentRace = ref('');
 const mmrRange = ref(100);
 const matchResults = ref([]);
@@ -205,18 +205,40 @@ const use1v1Mmr = ref(false);
 const myCommander = ref('');
 const opponentCommander = ref('');
 
+// Initialize race and commander from user profile
+onMounted(() => {
+    if (props.user) {
+        if (props.user.race && ['T', 'Z', 'P', 'R'].includes(props.user.race)) {
+            myRace.value = props.user.race;
+        }
+        if (props.user.commander) {
+            myCommander.value = props.user.commander;
+        }
+    }
+});
+
+watch(() => props.user, (newUser) => {
+    if (newUser) {
+        if (newUser.race && ['T', 'Z', 'P', 'R'].includes(newUser.race)) {
+            myRace.value = newUser.race;
+        }
+        if (newUser.commander) {
+            myCommander.value = newUser.commander;
+        }
+    }
+});
+
 // Inline MMR editing
 const showMmrEdit = ref(false);
 const mmrSaving = ref(false);
 const mmrSaveMsg = ref('');
 const editMmr = ref({
-    mmr: 0, mmrTerran: 0, mmrZerg: 0, mmrProtoss: 0, mmrRandom: 0, mmrTeam: 0
+    mmrTerran: 0, mmrZerg: 0, mmrProtoss: 0, mmrRandom: 0, mmrTeam: 0
 });
 
 function openMmrEdit() {
     if (!props.user) return;
     editMmr.value = {
-        mmr: props.user.mmr || 0,
         mmrTerran: props.user.mmrTerran || 0,
         mmrZerg: props.user.mmrZerg || 0,
         mmrProtoss: props.user.mmrProtoss || 0,
@@ -232,7 +254,6 @@ async function saveMmr() {
     mmrSaveMsg.value = '';
     try {
         const payload = {
-            mmr: editMmr.value.mmr,
             mmrTerran: editMmr.value.mmrTerran,
             mmrZerg: editMmr.value.mmrZerg,
             mmrProtoss: editMmr.value.mmrProtoss,
@@ -283,13 +304,14 @@ const commanders = [
 const userMmr = computed(() => {
     if (!props.user) return 0;
     if (use1v1Mmr.value || props.mode === '1v1') {
-        // Use per-race MMR when a race is selected for 1v1
         const raceToMmr = { 
             T: props.user.mmrTerran, Z: props.user.mmrZerg, 
             P: props.user.mmrProtoss, R: props.user.mmrRandom 
         };
         const perRace = myRace.value ? raceToMmr[myRace.value] : null;
-        return perRace || props.user.mmr || 0;
+        // fallback to best available 1v1 MMR
+        const best = Math.max(props.user.mmrTerran||0, props.user.mmrZerg||0, props.user.mmrProtoss||0, props.user.mmrRandom||0, props.user.mmr||0);
+        return perRace || best || 0;
     }
     if (props.mode === '2v2') return props.user.mmr2v2 || 0;
     if (props.mode === '3v3') return props.user.mmr3v3 || 0;
@@ -865,6 +887,24 @@ async function startMatch() {
     color: var(--sc2-text-dim);
     text-align: center;
     padding: 20px;
+}
+
+.coop-level-badge {
+    padding: 2px 8px;
+    background: rgba(0, 180, 216, 0.15);
+    border: 1px solid rgba(0, 180, 216, 0.4);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--sc2-accent);
+}
+
+.desc-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    color: var(--sc2-text-dim);
 }
 
 @media (max-width: 768px) {

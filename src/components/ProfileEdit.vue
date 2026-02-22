@@ -35,6 +35,26 @@
                             {{ cmd.name }}
                         </option>
                     </select>
+                    <label style="margin-top:12px;">合作模式等级 <span class="hint-text">(选填)</span></label>
+                    <select class="wInput select-input" v-model="form.coopLevel">
+                        <option value="">未填写</option>
+                        <option value="精通1">精通1</option>
+                        <option value="精通2">精通2</option>
+                        <option value="精通3">精通3</option>
+                        <option value="精通4">精通4</option>
+                        <option value="精通5">精通5</option>
+                        <option value="精通6">精通6</option>
+                        <option value="精通7">精通7</option>
+                        <option value="精通8">精通8</option>
+                        <option value="精通9">精通9</option>
+                        <option value="精通10">精通10</option>
+                        <option value="精通11">精通11</option>
+                        <option value="精通12">精通12</option>
+                        <option value="精通13">精通13</option>
+                        <option value="精通14">精通14</option>
+                        <option value="精通15">精通15</option>
+                        <option value="未精通">未精通</option>
+                    </select>
                 </div>
 
                 <div class="form-section">
@@ -50,16 +70,12 @@
                 <div class="form-section">
                     <label>个人展示</label>
                     <input type="text" placeholder="直播链接" class="wInput" v-model="form.streamUrl">
-                    <textarea placeholder="个性签名" class="wInput textarea-input" v-model="form.signature"></textarea>
+                    <textarea placeholder="个人描述（可描述自己的战术风格、想要打的对抗等等，会在约战页面展示）" class="wInput textarea-input" v-model="form.signature" rows="4"></textarea>
                 </div>
 
                 <div class="form-section">
                     <label>MMR 信息 (可手动调整或同步)</label>
                     <div class="mmr-edit-grid">
-                        <div class="mmr-item">
-                            <span class="mmr-label">1v1 MMR (主)</span>
-                            <input type="number" v-model.number="form.mmr" class="wInput mmr-input">
-                        </div>
                         <div class="mmr-item">
                             <span class="mmr-label">1v1 人族</span>
                             <input type="number" v-model.number="form.mmrTerran" class="wInput mmr-input">
@@ -119,6 +135,7 @@ const form = ref({
     streamUrl: '',
     signature: '',
     commander: '',
+    coopLevel: '',
     mmr: 0,
     mmrTerran: 0,
     mmrZerg: 0,
@@ -150,6 +167,7 @@ onMounted(() => {
             qq: props.user.qq || '',
             race: props.user.race || '',
             commander: props.user.commander || '',
+            coopLevel: props.user.coopLevel || '',
             region: props.user.region || '',
             streamUrl: props.user.streamUrl || '',
             signature: props.user.signature || '',
@@ -248,6 +266,13 @@ function selectProfilePicture() { /* placeholder */ }
     margin-bottom: 10px;
     font-weight: bold;
     text-transform: uppercase;
+}
+
+.hint-text {
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+    text-transform: none;
+    font-weight: normal;
 }
 
 .tag-input-group {

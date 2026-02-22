@@ -11,14 +11,31 @@
         <!-- Add Stream Form -->
         <div v-if="showAddForm" class="add-stream-modal">
             <div class="modal-content sc2-panel">
-                <h3>新增直播</h3>
-                <input v-model="form.name" class="wInput" placeholder="主播名称 (必填)" />
-                <input v-model="form.battleTag" class="wInput" placeholder="BattleTag (可选，自动同步MMR)" />
+                <h3>上榜申请</h3>
+                <p class="form-hint">填写后将直接展示在直播列表中。MMR会自动从填入的战网ID中取各服务器最高值。</p>
+                <input v-model="form.name" class="wInput" placeholder="主播名称 (必填，显示在列表中)" />
                 <input v-model="form.streamUrl" class="wInput" placeholder="直播间链接 (必填)" />
-                <input v-model="form.platform" class="wInput" placeholder="平台 (如 Bilibili/Douyu)" />
+                <input v-model="form.platform" class="wInput" placeholder="直播平台 (如 Bilibili/Douyu/Twitch)" />
+                <div class="tag-section">
+                    <p class="tag-label">战网ID（至少填写一个服务器以自动获取最高MMR）</p>
+                    <input v-model="form.battleTag" class="wInput" placeholder="战网ID (通用，如 XXX#1234)" />
+                    <input v-model="form.battleTagCN" class="wInput" placeholder="国服战网ID (选填)" />
+                    <input v-model="form.battleTagUS" class="wInput" placeholder="美服战网ID (选填)" />
+                    <input v-model="form.battleTagEU" class="wInput" placeholder="欧服战网ID (选填)" />
+                    <input v-model="form.battleTagKR" class="wInput" placeholder="韩服战网ID (选填)" />
+                </div>
+                <input type="number" v-model.number="form.mmr" class="wInput" placeholder="手动填写MMR (若自动获取失败)" />
+                <select v-model="form.race" class="wInput">
+                    <option value="">种族 (选填)</option>
+                    <option value="T">人族</option>
+                    <option value="Z">异虫</option>
+                    <option value="P">星灵</option>
+                    <option value="R">随机</option>
+                </select>
                 <div class="modal-actions">
-                    <button class="btn-success" @click="submitStream">提交</button>
+                    <button class="btn-success" @click="submitStream" :disabled="submitting">{{ submitting ? '提交中...' : '提交上榜' }}</button>
                     <button class="btn-cancel" @click="showAddForm = false">取消</button>
+                    <span v-if="formMsg" :class="['form-msg', formMsgType]">{{ formMsg }}</span>
                 </div>
             </div>
         </div>
@@ -74,9 +91,18 @@ const raceMap = { TERRAN: '人族', ZERG: '异虫', PROTOSS: '星灵', RANDOM: '
 const form = reactive({
     name: '',
     battleTag: '',
+    battleTagCN: '',
+    battleTagUS: '',
+    battleTagEU: '',
+    battleTagKR: '',
     streamUrl: '',
-    platform: ''
+    platform: '',
+    mmr: null,
+    race: ''
 });
+const submitting = ref(false);
+const formMsg = ref('');
+const formMsgType = ref('success');
 
 const currentUser = getStoredUser();
 const isAdmin = computed(() => currentUser?.role === 'admin' || currentUser?.role === 'super_admin');
@@ -133,22 +159,30 @@ async function loadStreams() {
 }
 
 async function submitStream() {
+    formMsg.value = '';
     if (!form.name || !form.streamUrl) {
-        alert('请填写必填项');
+        formMsg.value = '请填写主播名称和直播链接';
+        formMsgType.value = 'error';
         return;
     }
+    submitting.value = true;
     try {
         const res = await addStream({ ...form, userId: currentUser?.id });
         if (res.data.code === 200) {
-            alert('发布成功！审核通过后将永久展示。');
-            showAddForm.value = false;
-            Object.assign(form, { name: '', battleTag: '', streamUrl: '', platform: '' });
+            formMsg.value = '发布成功！将直接展示在列表中。';
+            formMsgType.value = 'success';
+            Object.assign(form, { name: '', battleTag: '', battleTagCN: '', battleTagUS: '', battleTagEU: '', battleTagKR: '', streamUrl: '', platform: '', mmr: null, race: '' });
             await loadStreams();
+            setTimeout(() => { showAddForm.value = false; formMsg.value = ''; }, 1500);
         } else {
-            alert(res.data.msg);
+            formMsg.value = res.data.msg || '发布失败';
+            formMsgType.value = 'error';
         }
     } catch (e) {
-        alert('发布失败');
+        formMsg.value = '发布失败，请稍后再试';
+        formMsgType.value = 'error';
+    } finally {
+        submitting.value = false;
     }
 }
 
@@ -406,9 +440,32 @@ onMounted(loadStreams);
         grid-template-columns: 1fr;
         gap: 12px;
     }
-
-    .stream-card {
-        padding: 16px;
-    }
+    .stream-card { padding: 16px; }
 }
+
+.form-hint {
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.tag-section {
+    border: 1px solid var(--sc2-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.tag-label {
+    font-size: 12px;
+    color: var(--sc2-accent);
+    margin-bottom: 8px;
+}
+
+.form-msg {
+    font-size: 13px;
+}
+.form-msg.success { color: #00c864; }
+.form-msg.error { color: #ff5050; }
 </style>

@@ -109,6 +109,76 @@ export function deleteStream(id, adminId) {
     return api.delete(`/stream/${id}`, { params: { adminId } });
 }
 
+// ============ Public Reports (挂人区) APIs ============
+
+export function getPublicReports(search) {
+    const params = {};
+    if (search) params.search = search;
+    return api.get('/public-report/list', { params });
+}
+
+export function createPublicReport(data) {
+    return api.post('/public-report', data);
+}
+
+// ============ Coaching APIs ============
+
+export function getCoachingPosts(type) {
+    const params = {};
+    if (type && type !== 'all') params.type = type;
+    return api.get('/coaching/list', { params });
+}
+
+export function createCoachingPost(data) {
+    return api.post('/coaching', data);
+}
+
+// ============ Text Tutorial APIs ============
+
+export function getTextTutorials(category) {
+    const params = {};
+    if (category) params.category = category;
+    return api.get('/text-tutorial/list', { params });
+}
+
+export function getTextTutorialCategories() {
+    return api.get('/text-tutorial/categories');
+}
+
+export function createTextTutorial(data) {
+    return api.post('/text-tutorial', data);
+}
+
+// ============ Replay APIs ============
+
+export function getReplays(category) {
+    const params = {};
+    if (category) params.category = category;
+    return api.get('/replay/list', { params });
+}
+
+export function getTutorialCategories() {
+    return api.get('/tutorial/categories');
+}
+
+// ============ Clan APIs ============
+
+export function getClanRanking(query = '') {
+    return api.get('/clan/ranking', { params: query ? { query } : {} });
+}
+
+export function getClanRecruitments() {
+    return api.get('/clan/recruitment');
+}
+
+export function createClanRecruitment(data) {
+    return api.post('/clan/recruitment', data);
+}
+
+export function deleteClanRecruitment(id, userId) {
+    return api.delete(`/clan/recruitment/${id}`, { params: { userId } });
+}
+
 // ============ Admin APIs ============
 
 export function adminListUsers(adminId) {

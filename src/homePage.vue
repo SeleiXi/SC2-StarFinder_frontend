@@ -66,14 +66,13 @@
                     <span class="nav-label">MMR 查询</span>
                 </a>
 
-                <!-- 教学视频 -->
+                <!-- 教学 -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 8 }" @click.prevent="switchPage(8)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
-                        <path
-                            d="m160-800 80 160h120l-80-160h80l80 160h120l-80-160h80l80 160h120l-80-160h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800Zm0 240v320h640v-320H160Zm0 0v320-320Z" />
+                        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h360l280 280v360q0 33-23.5 56.5T760-120H200Zm0-80h560v-320H520v-240H200v560Zm80-80h400v-80H280v80Zm0-160h400v-80H280v80Zm0-160h240v-80H280v80Zm240-40v-160l160 160H520Z"/>
                     </svg>
-                    <span class="nav-label">教学视频</span>
+                    <span class="nav-label">教学</span>
                 </a>
 
                 <!-- 直播列表 -->
@@ -109,6 +108,24 @@
                         </ul>
                     </transition>
                 </div>
+
+                <!-- 挂人区 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 16 }" @click.prevent="switchPage(16)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M480-80q-140 0-240-100T140-420q0-100 49.5-184.5T326-738l-86-86 56-56 88 88q42-20 88-31t88-11q140 0 240 100t100 240q0 140-100 240T480-80Zm0-80q108 0 184-76t76-184q0-108-76-184T480-680q-108 0-184 76t-76 184q0 108 76 184t184 76Zm0-80q-75 0-127.5-52.5T300-420q0-75 52.5-127.5T480-600q75 0 127.5 52.5T660-420q0 75-52.5 127.5T480-240Zm0-80q42 0 71-29t29-71q0-42-29-71t-71-29q-42 0-71 29t-29 71q0 42 29 71t71 29Z"/>
+                    </svg>
+                    <span class="nav-label">挂人区</span>
+                </a>
+
+                <!-- 战队 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 17 }" @click.prevent="switchPage(17)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M0-240v-63q0-43 44-70t116-27q13 0 25 .5t23 2.5q-14 21-21 44t-7 48v65H0Zm240 0v-65q0-32 17.5-58.5T307-410q32-20 76.5-30t96.5-10q53 0 97.5 10t76.5 30q32 20 49 46.5t17 58.5v65H240Zm540 0v-65q0-26-6.5-49T754-397q11-2 22.5-2.5t23.5-.5q72 0 116 26.5t44 70.5v63H780Zm-480-80h360v-6q0-37-74.5-60.5T480-410q-77 0-151 23.5T254-326v6ZM160-440q-33 0-56.5-23.5T80-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T160-440Zm640 0q-33 0-56.5-23.5T720-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T800-440Zm-320-40q-50 0-85-35t-35-85q0-51 35-85.5t85-34.5q51 0 85.5 34.5T600-600q0 50-34.5 85T480-480Zm0-80q17 0 28.5-11.5T520-600q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600q0 17 11.5 28.5T480-560Zm1 240Zm-1-280Z"/>
+                    </svg>
+                    <span class="nav-label">战队</span>
+                </a>
 
                 <!-- 管理后台 (admin only) -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 99 }" @click.prevent="switchPage(99)"
@@ -174,15 +191,22 @@
                 <StreamList v-if="currentId == 13 && !profileEditMode"></StreamList>
                 <AIAssistant v-if="currentId == 14 && !profileEditMode"></AIAssistant>
                 <FindMmr v-if="currentId == 15 && !profileEditMode"></FindMmr>
+                <PublicReports v-if="currentId == 16 && !profileEditMode"></PublicReports>
+                <ClanInfo v-if="currentId == 17 && !profileEditMode"></ClanInfo>
                 <AdminPanel v-if="currentId == 99 && !profileEditMode" :user="currentUser"></AdminPanel>
             </div>
+            <!-- Footer -->
+            <footer class="site-footer">
+                网站由 <a href="https://blog.seleixi.site/about/" target="_blank" rel="noopener">SeleiXi</a> 制作，可以给
+                <a href="https://github.com/SeleiXi/SC2-StarFinder-Backend" target="_blank" rel="noopener">Github</a> 点个 Star~
+            </footer>
         </main>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 import findMatch from './components/FindMatch.vue';
 import matchInfo from './components/MatchInfoPublicity.vue';
@@ -195,15 +219,47 @@ import StreamList from './components/StreamList.vue';
 import AdminPanel from './components/AdminPanel.vue';
 import AIAssistant from './components/AIAssistant.vue';
 import FindMmr from './components/FindMmr.vue';
+import PublicReports from './components/PublicReports.vue';
+import ClanInfo from './components/ClanInfo.vue';
 import { getStoredUser, clearUser } from './api/api.js';
 
 const router = useRouter();
+const route = useRoute();
 const sidebarCollapsed = ref(false);
 const profileEditMode = ref(false);
 const isLogin = ref(false);
 const currentUser = ref(null);
 const currentId = ref(2);
 const openMenus = reactive({ match: true, cheat: false });
+
+// Map URL path to page ID
+function pathToId(path) {
+    if (!path || path === '/') return 2;
+    if (path.startsWith('/match/')) {
+        const mode = path.replace('/match/', '');
+        const map = { '1v1': 2, '2v2': 3, '3v3': 4, '4v4': 5, 'coop': 6 };
+        return map[mode] || 2;
+    }
+    const map = {
+        '/events': 7, '/tutorial': 8, '/profile': 12, '/streams': 13,
+        '/mmr': 15, '/public-reports': 16, '/clan': 17, '/admin': 99,
+        '/cheater/report': 10, '/cheater/list': 11, '/cheater': 10
+    };
+    for (const [k, v] of Object.entries(map)) {
+        if (path === k || path.startsWith(k + '/')) return v;
+    }
+    return 2;
+}
+
+// Map page ID to URL path
+function idToPath(id) {
+    const map = {
+        2: '/match/1v1', 3: '/match/2v2', 4: '/match/3v3', 5: '/match/4v4', 6: '/match/coop',
+        7: '/events', 8: '/tutorial', 10: '/cheater/report', 11: '/cheater/list',
+        12: '/profile', 13: '/streams', 14: '/ai', 15: '/mmr', 16: '/public-reports', 17: '/clan', 99: '/admin'
+    };
+    return map[id] || '/';
+}
 
 onMounted(() => {
     const user = getStoredUser();
@@ -214,6 +270,12 @@ onMounted(() => {
     if (window.innerWidth <= 768) {
         sidebarCollapsed.value = true;
     }
+    // Initialize from current URL
+    const id = pathToId(route.path);
+    currentId.value = id;
+    // Open relevant submenus
+    if (id >= 2 && id <= 6) openMenus.match = true;
+    if (id === 10 || id === 11) openMenus.cheat = true;
 });
 
 function toggleSubMenu(key) {
@@ -230,6 +292,10 @@ function toggleSidebar() {
 function switchPage(newId) {
     profileEditMode.value = false;
     currentId.value = newId;
+    const path = idToPath(newId);
+    if (route.path !== path) {
+        router.push(path);
+    }
     if (window.innerWidth <= 768) {
         sidebarCollapsed.value = true;
     }
@@ -486,6 +552,26 @@ function handleLogout() {
     padding: 32px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+.site-footer {
+    text-align: center;
+    padding: 20px 32px;
+    font-size: 13px;
+    color: var(--sc2-text-dim);
+    border-top: 1px solid var(--sc2-border);
+    margin-top: 40px;
+}
+
+.site-footer a {
+    color: var(--sc2-accent);
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.site-footer a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
 }
 
 /* ===== MOBILE RESPONSIVE ===== */
