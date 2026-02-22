@@ -156,8 +156,6 @@ const props = defineProps({
 
 const myCommander = ref(props.user?.commander || '');
 
-const myCommander = ref(props.user?.commander || '');
-
 watch(() => props.user?.commander, (newVal) => {
     myCommander.value = newVal || '';
 });

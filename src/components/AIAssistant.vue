@@ -53,12 +53,13 @@ async function sendMessage() {
 
     try {
         const response = await axios.post('/api/ai/query', { prompt: userPrompt });
-        if (response.data.success) {
+        if (response.data.code === 200 && response.data.data) {
             messages.value.push({ role: 'ai', content: response.data.data });
         } else {
-            messages.value.push({ role: 'ai', content: '抱歉，服务目前不可用：' + (response.data.message || '未知错误') });
+            messages.value.push({ role: 'ai', content: '抱歉，服务目前不可用：' + (response.data.msg || '未知错误') });
         }
     } catch (e) {
+        console.error('AI API Error:', e);
         messages.value.push({ role: 'ai', content: '由于网络或配置问题，AI 响应失败。' });
     } finally {
         loading.value = false;
