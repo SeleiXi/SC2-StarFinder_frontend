@@ -36,25 +36,7 @@
                         </option>
                     </select>
                     <label style="margin-top:12px;">合作模式等级 <span class="hint-text">(选填)</span></label>
-                    <select class="wInput select-input" v-model="form.coopLevel">
-                        <option value="">未填写</option>
-                        <option value="精通1">精通1</option>
-                        <option value="精通2">精通2</option>
-                        <option value="精通3">精通3</option>
-                        <option value="精通4">精通4</option>
-                        <option value="精通5">精通5</option>
-                        <option value="精通6">精通6</option>
-                        <option value="精通7">精通7</option>
-                        <option value="精通8">精通8</option>
-                        <option value="精通9">精通9</option>
-                        <option value="精通10">精通10</option>
-                        <option value="精通11">精通11</option>
-                        <option value="精通12">精通12</option>
-                        <option value="精通13">精通13</option>
-                        <option value="精通14">精通14</option>
-                        <option value="精通15">精通15</option>
-                        <option value="未精通">未精通</option>
-                    </select>
+                    <input type="number" class="wInput" v-model="form.coopLevel" placeholder="手动填写等级（不设上限）" min="0" step="1">
                 </div>
 
                 <div class="form-section">

@@ -90,4 +90,15 @@ html,
 .glow-text {
     text-shadow: 0 0 10px var(--sc2-accent), 0 0 20px rgba(0, 180, 216, 0.3);
 }
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
 </style>

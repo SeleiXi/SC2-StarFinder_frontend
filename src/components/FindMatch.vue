@@ -1,14 +1,14 @@
 <template>
     <div class="find-match">
         <!-- Your Race / Commander -->
-        <div class="sc2-panel race-panel">
+        <div class="sc2-panel race-panel" v-if="mode !== 'coop'">
             <div class="panel-header">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="currentColor" class="header-icon">
                     <path
                         d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160Z" />
                 </svg>
-                <span class="panel-title">{{ mode === 'coop' ? '修改常用指挥官' : '你的种族' }}</span>
+                <span class="panel-title">你的种族</span>
                 <span class="mmr-badge" v-if="mode !== 'coop'">
                     MMR: {{ userMmr }}
                     <button class="mmr-edit-btn" @click.stop="showMmrEdit ? (showMmrEdit = false) : openMmrEdit()" title="编辑MMR">
@@ -75,13 +75,6 @@
                 </div>
             </div>
 
-            <div class="commander-grid" v-else>
-                <div v-for="cmd in commanders" :key="cmd.id" class="commander-card" 
-                    :class="{ selected: myCommander === cmd.name }" @click="myCommander = cmd.name">
-                    <img :src="cmd.img" :alt="cmd.name" class="commander-portrait-img">
-                    <span class="commander-name">{{ cmd.name }}</span>
-                </div>
-            </div>
         </div>
 
         <!-- Opponent Race / Commander -->
@@ -149,6 +142,20 @@
                 <span class="mode-tag">{{ mode }}</span>
             </div>
         </div>
+
+        <details v-if="mode === 'coop'" class="sc2-panel commander-panel">
+            <summary class="commander-summary">
+                <span class="panel-title">修改常用指挥官</span>
+                <span class="summary-hint">可选</span>
+            </summary>
+            <div class="commander-grid">
+                <div v-for="cmd in commanders" :key="cmd.id" class="commander-card" 
+                    :class="{ selected: myCommander === cmd.name }" @click="myCommander = cmd.name">
+                    <img :src="cmd.img" :alt="cmd.name" class="commander-portrait-img">
+                    <span class="commander-name">{{ cmd.name }}</span>
+                </div>
+            </div>
+        </details>
 
         <!-- Match Results -->
         <div v-if="matchResults.length > 0" class="sc2-panel results-panel">
@@ -382,6 +389,31 @@ async function startMatch() {
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
+}
+
+.commander-panel {
+    margin-top: 24px;
+}
+
+.commander-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.commander-summary::-webkit-details-marker {
+    display: none;
+}
+
+.summary-hint {
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+    border: 1px solid var(--sc2-border);
+    border-radius: 10px;
+    padding: 2px 8px;
 }
 
 .header-icon {
@@ -946,6 +978,11 @@ async function startMatch() {
     .mode-tag {
         font-size: 18px;
     }
+
+    .commander-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -956,6 +993,11 @@ async function startMatch() {
 
     .race-card span {
         font-size: 11px;
+    }
+
+    .commander-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
     }
 }
 </style>

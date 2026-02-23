@@ -16,6 +16,15 @@
             </div>
 
             <nav class="sidebar-nav">
+                <!-- 教学 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 8 }" @click.prevent="switchPage(8)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h360l280 280v360q0 33-23.5 56.5T760-120H200Zm0-80h560v-320H520v-240H200v560Zm80-80h400v-80H280v80Zm0-160h400v-80H280v80Zm0-160h240v-80H280v80Zm240-40v-160l160 160H520Z"/>
+                    </svg>
+                    <span class="nav-label">教学</span>
+                </a>
+
                 <!-- 约战 Dropdown -->
                 <div class="nav-group">
                     <button class="nav-item" :class="{ active: currentId >= 2 && currentId <= 6 }"
@@ -47,32 +56,13 @@
                     </transition>
                 </div>
 
-                <!-- 赛事宣传 -->
-                <a href="#" class="nav-item" :class="{ active: currentId === 7 }" @click.prevent="switchPage(7)">
+                <!-- 战队 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 17 }" @click.prevent="switchPage(17)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
-                        <path
-                            d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-40-82v-78q-33 0-56.5-23.5T360-320v-40L168-552q-3 18-5.5 36t-2.5 36q0 121 79.5 212T440-162Zm276-102q41-45 62.5-100.5T800-480q0-98-54.5-179T600-776v16q0 33-23.5 56.5T520-680h-80v80q0 17-11.5 28.5T400-560h-80v80h240q17 0 28.5 11.5T600-440v120h40q26 0 47 15.5t29 40.5Z" />
+                        <path d="M0-240v-63q0-43 44-70t116-27q13 0 25 .5t23 2.5q-14 21-21 44t-7 48v65H0Zm240 0v-65q0-32 17.5-58.5T307-410q32-20 76.5-30t96.5-10q53 0 97.5 10t76.5 30q32 20 49 46.5t17 58.5v65H240Zm540 0v-65q0-26-6.5-49T754-397q11-2 22.5-2.5t23.5-.5q72 0 116 26.5t44 70.5v63H780Zm-480-80h360v-6q0-37-74.5-60.5T480-410q-77 0-151 23.5T254-326v6ZM160-440q-33 0-56.5-23.5T80-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T160-440Zm640 0q-33 0-56.5-23.5T720-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T800-440Zm-320-40q-50 0-85-35t-35-85q0-51 35-85.5t85-34.5q51 0 85.5 34.5T600-600q0 50-34.5 85T480-480Zm0-80q17 0 28.5-11.5T520-600q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600q0 17 11.5 28.5T480-560Zm1 240Zm-1-280Z"/>
                     </svg>
-                    <span class="nav-label">赛事宣传</span>
-                </a>
-
-                <!-- MMR 查询 -->
-                <a href="#" class="nav-item" :class="{ active: currentId === 15 }" @click.prevent="switchPage(15)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor">
-                        <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
-                    </svg>
-                    <span class="nav-label">MMR 查询</span>
-                </a>
-
-                <!-- 教学 -->
-                <a href="#" class="nav-item" :class="{ active: currentId === 8 }" @click.prevent="switchPage(8)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor">
-                        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h360l280 280v360q0 33-23.5 56.5T760-120H200Zm0-80h560v-320H520v-240H200v560Zm80-80h400v-80H280v80Zm0-160h400v-80H280v80Zm0-160h240v-80H280v80Zm240-40v-160l160 160H520Z"/>
-                    </svg>
-                    <span class="nav-label">教学</span>
+                    <span class="nav-label">战队</span>
                 </a>
 
                 <!-- 直播列表 -->
@@ -82,6 +72,15 @@
                         <path d="M320-200v-560l440 280-440 280Z" />
                     </svg>
                     <span class="nav-label">直播列表</span>
+                </a>
+
+                <!-- 挂人区 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 16 }" @click.prevent="switchPage(16)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M480-80q-140 0-240-100T140-420q0-100 49.5-184.5T326-738l-86-86 56-56 88 88q42-20 88-31t88-11q140 0 240 100t100 240q0 140-100 240T480-80Zm0-80q108 0 184-76t76-184q0-108-76-184T480-680q-108 0-184 76t-76 184q0 108 76 184t184 76Zm0-80q-75 0-127.5-52.5T300-420q0-75 52.5-127.5T480-600q75 0 127.5 52.5T660-420q0 75-52.5 127.5T480-240Zm0-80q42 0 71-29t29-71q0-42-29-71t-71-29q-42 0-71 29t-29 71q0 42 29 71t71 29Z"/>
+                    </svg>
+                    <span class="nav-label">挂人区</span>
                 </a>
 
                 <!-- 外挂图鉴 Dropdown -->
@@ -109,22 +108,23 @@
                     </transition>
                 </div>
 
-                <!-- 挂人区 -->
-                <a href="#" class="nav-item" :class="{ active: currentId === 16 }" @click.prevent="switchPage(16)">
+                <!-- 赛事宣传 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 7 }" @click.prevent="switchPage(7)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
-                        <path d="M480-80q-140 0-240-100T140-420q0-100 49.5-184.5T326-738l-86-86 56-56 88 88q42-20 88-31t88-11q140 0 240 100t100 240q0 140-100 240T480-80Zm0-80q108 0 184-76t76-184q0-108-76-184T480-680q-108 0-184 76t-76 184q0 108 76 184t184 76Zm0-80q-75 0-127.5-52.5T300-420q0-75 52.5-127.5T480-600q75 0 127.5 52.5T660-420q0 75-52.5 127.5T480-240Zm0-80q42 0 71-29t29-71q0-42-29-71t-71-29q-42 0-71 29t-29 71q0 42 29 71t71 29Z"/>
+                        <path
+                            d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-40-82v-78q-33 0-56.5-23.5T360-320v-40L168-552q-3 18-5.5 36t-2.5 36q0 121 79.5 212T440-162Zm276-102q41-45 62.5-100.5T800-480q0-98-54.5-179T600-776v16q0 33-23.5 56.5T520-680h-80v80q0 17-11.5 28.5T400-560h-80v80h240q17 0 28.5 11.5T600-440v120h40q26 0 47 15.5t29 40.5Z" />
                     </svg>
-                    <span class="nav-label">挂人区</span>
+                    <span class="nav-label">赛事宣传</span>
                 </a>
 
-                <!-- 战队 -->
-                <a href="#" class="nav-item" :class="{ active: currentId === 17 }" @click.prevent="switchPage(17)">
+                <!-- MMR 查询 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 15 }" @click.prevent="switchPage(15)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
-                        <path d="M0-240v-63q0-43 44-70t116-27q13 0 25 .5t23 2.5q-14 21-21 44t-7 48v65H0Zm240 0v-65q0-32 17.5-58.5T307-410q32-20 76.5-30t96.5-10q53 0 97.5 10t76.5 30q32 20 49 46.5t17 58.5v65H240Zm540 0v-65q0-26-6.5-49T754-397q11-2 22.5-2.5t23.5-.5q72 0 116 26.5t44 70.5v63H780Zm-480-80h360v-6q0-37-74.5-60.5T480-410q-77 0-151 23.5T254-326v6ZM160-440q-33 0-56.5-23.5T80-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T160-440Zm640 0q-33 0-56.5-23.5T720-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T800-440Zm-320-40q-50 0-85-35t-35-85q0-51 35-85.5t85-34.5q51 0 85.5 34.5T600-600q0 50-34.5 85T480-480Zm0-80q17 0 28.5-11.5T520-600q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600q0 17 11.5 28.5T480-560Zm1 240Zm-1-280Z"/>
+                        <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
                     </svg>
-                    <span class="nav-label">战队</span>
+                    <span class="nav-label">MMR 查询</span>
                 </a>
 
                 <!-- 管理后台 (admin only) -->
@@ -533,8 +533,9 @@ function handleLogout() {
 .mobile-menu-btn {
     display: none;
     position: fixed;
-    top: 12px;
-    left: 12px;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 999;
     background: var(--sc2-bg-panel);
     border: 1px solid var(--sc2-border);

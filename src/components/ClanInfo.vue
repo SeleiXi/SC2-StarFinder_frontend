@@ -24,6 +24,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-40-120h80v-280h-80v280Zm40-360q17 0 28.5-11.5T520-600q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600q0 17 11.5 28.5T480-560Z"/></svg>
                 数据暂不支持国服
             </div>
+            <div class="sort-controls">
+                <span class="sort-label">排序：</span>
+                <button class="sort-btn" :class="{ active: sortBy === 'avgRating' }" @click="changeSort('avgRating')">平均MMR</button>
+                <button class="sort-btn" :class="{ active: sortBy === 'activeMembers' }" @click="changeSort('activeMembers')">活跃度</button>
+            </div>
 
             <div v-if="rankLoading" class="loading">加载中...</div>
             <div v-else class="ranking-table-wrap">
@@ -167,14 +172,21 @@ const activeTab = ref('ranking');
 // ---- RANKING ----
 const ranking = ref([]);
 const rankLoading = ref(false);
+const sortBy = ref('avgRating');
 
 async function loadRanking() {
     rankLoading.value = true;
     try {
-        const res = await axios.get('/api/clan/ranking');
+        const res = await axios.get('/api/clan/ranking', { params: { sortBy: sortBy.value } });
         ranking.value = res.data?.data || [];
     } catch (e) { ranking.value = []; }
     finally { rankLoading.value = false; }
+}
+
+function changeSort(key) {
+    if (sortBy.value === key) return;
+    sortBy.value = key;
+    loadRanking();
 }
 
 // ---- SEARCH ----
@@ -306,6 +318,40 @@ onMounted(() => {
 }
 .data-notice a { color: var(--sc2-accent); text-decoration: none; }
 .data-notice svg { fill: var(--sc2-text-dim); }
+
+.sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.sort-label {
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+}
+
+.sort-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--sc2-border);
+    background: transparent;
+    color: var(--sc2-text);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sort-btn:hover {
+    border-color: var(--sc2-accent);
+    color: var(--sc2-accent);
+}
+
+.sort-btn.active {
+    background: rgba(0, 180, 216, 0.12);
+    border-color: var(--sc2-accent);
+    color: var(--sc2-accent);
+}
 
 .sc2-table {
     width: 100%;

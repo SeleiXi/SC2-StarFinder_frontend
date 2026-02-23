@@ -42,7 +42,7 @@
                     <span class="info-value">{{ user?.battleTagKR || '-' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">QQ</span>
+                    <span class="info-label">QQ/联系方式</span>
                     <span class="info-value">{{ user?.qq || '未设置' }}</span>
                 </div>
                 <div class="info-item">

@@ -11,6 +11,8 @@
                     {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
                 </button>
             </div>
+            <input type="password" v-model="form.password" class="wInput" placeholder="密码 (至少8位)" required>
+            
 
             <div class="inline-row">
                 <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (选填，如 Amaris#31262)" style="flex: 2; margin-top: 0;">
@@ -22,8 +24,7 @@
                 </select>
             </div>
 
-            <input type="text" v-model="form.qq" class="wInput" placeholder="QQ号 (选填)">
-            <input type="password" v-model="form.password" class="wInput" placeholder="密码 (至少8位)" required>
+            <input type="text" v-model="form.qq" class="wInput" placeholder="QQ/联系方式 (选填)">
         </form>
         <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
         <span v-if="successMsg" class="success-msg">{{ successMsg }}</span>
