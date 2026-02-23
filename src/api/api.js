@@ -1,11 +1,23 @@
 import axios from 'axios';
 
+const TOKEN_KEY = 'sc2_token';
+const USER_KEY = 'sc2_user';
+
 const api = axios.create({
     baseURL: '/api',
     timeout: 15000,
     headers: {
         'Content-Type': 'application/json'
     }
+});
+
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
 // ============ User APIs ============
@@ -243,16 +255,29 @@ export function adminDeleteTutorial(id, adminId) {
 // ============ Auth helpers ============
 
 export function saveUser(user) {
-    localStorage.setItem('sc2_user', JSON.stringify(user));
+    // Backward compatibility:
+    // - Old: saveUser(User)
+    // - New: saveUser({ user: User, token: string })
+    if (user && user.user && user.token) {
+        localStorage.setItem(USER_KEY, JSON.stringify(user.user));
+        localStorage.setItem(TOKEN_KEY, user.token);
+        return;
+    }
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function getStoredUser() {
-    const data = localStorage.getItem('sc2_user');
+    const data = localStorage.getItem(USER_KEY);
     return data ? JSON.parse(data) : null;
 }
 
+export function getStoredToken() {
+    return localStorage.getItem(TOKEN_KEY);
+}
+
 export function clearUser() {
-    localStorage.removeItem('sc2_user');
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
 }
 
 export default api;

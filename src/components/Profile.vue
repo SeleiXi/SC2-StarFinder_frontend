@@ -52,7 +52,7 @@
             </div>
 
             <div class="mmr-display-section" v-if="user?.mmr || user?.mmrTerran || user?.mmrZerg || user?.mmrProtoss || user?.mmrRandom || user?.mmr2v2 || user?.mmr3v3 || user?.mmr4v4">
-                <h3>MMR 详情 (自动同步)</h3>
+                <h3>MMR 详情 (每日自动同步一次，同步不适用于国服)</h3>
                 <div class="mmr-grid">
                     <div class="mmr-box" v-if="user?.mmr">
                         <div class="mmr-label">1v1 (主)</div>

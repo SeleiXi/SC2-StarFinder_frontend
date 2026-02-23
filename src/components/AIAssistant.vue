@@ -31,6 +31,7 @@
 import { ref, nextTick } from 'vue';
 import axios from 'axios';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const userInput = ref('');
 const loading = ref(false);
@@ -39,7 +40,10 @@ const messages = ref([
     { role: 'ai', content: '您好！我是您的星际争霸2 AI 战略顾问。有什么我可以帮您的？' }
 ]);
 
-const renderMarkdown = (text) => marked(text);
+const renderMarkdown = (text) => {
+    const rawHtml = marked.parse(String(text ?? ''), { mangle: false, headerIds: false });
+    return DOMPurify.sanitize(rawHtml);
+};
 
 async function sendMessage() {
     if (!userInput.value.trim() || loading.value) return;
