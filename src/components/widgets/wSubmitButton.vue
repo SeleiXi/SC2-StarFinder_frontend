@@ -1,5 +1,5 @@
 <template>
-    <div class="sc2-btn-submit" ref="btnRef" @click="$emit('click')">
+    <div class="sc2-btn-submit" ref="btnRef" :class="{disabled: disabled || loading}" @click="onClick">
         <span class="btn-text">{{ text }}</span>
         <div class="btn-shine"></div>
     </div>
@@ -13,8 +13,18 @@ const btnRef = ref(null);
 const props = defineProps({
     text: { type: String, required: true },
     fontSize: { type: String, default: undefined },
-    width: { type: String, default: undefined }
+    width: { type: String, default: undefined },
+    disabled: { type: Boolean, default: false },
+    loading: { type: Boolean, default: false }
 });
+
+function onClick() {
+    if (props.disabled || props.loading) return;
+    // Emit click only when enabled
+    emitClick();
+}
+
+const emit = defineEmits(['click']);
 
 onMounted(() => {
     if (props.fontSize && btnRef.value) {
@@ -24,6 +34,11 @@ onMounted(() => {
         btnRef.value.style.width = props.width;
     }
 });
+
+function emitClick() {
+    // Use nextTick emit to avoid sync re-entrancy
+    emit('click');
+}
 </script>
 
 <style scoped>

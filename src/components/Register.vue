@@ -3,15 +3,15 @@
         <h2 class="form-title">注册</h2>
         <p class="form-subtitle">CREATE YOUR ACCOUNT</p>
         <form @submit.prevent>
-            <input type="email" v-model="form.email" class="wInput" placeholder="电子邮箱" required>
+            <input type="email" v-model="form.email" class="wInput" placeholder="电子邮箱" required autocomplete="email">
             
             <div class="code-row">
-                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0; flex: 1;">
+                <input type="text" v-model="form.emailCode" class="wInput" placeholder="邮箱验证码" required style="margin-top: 0; flex: 1;" autocomplete="one-time-code">
                 <button type="button" class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0" style="margin-top: 0;">
                     {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
                 </button>
             </div>
-            <input type="password" v-model="form.password" class="wInput" placeholder="密码 (至少8位)" required>
+            <input type="password" v-model="form.password" class="wInput" placeholder="密码 (至少8位)" required autocomplete="new-password">
             
 
             <div class="inline-row">
@@ -28,13 +28,13 @@
         </form>
         <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
         <span v-if="successMsg" class="success-msg">{{ successMsg }}</span>
-        <wSubmitButton text="创建账号" @click="handleRegister"></wSubmitButton>
+        <wSubmitButton text="创建账号" @click="handleRegister" :disabled="registering"></wSubmitButton>
         <wTextButton text="已有账号？即刻登录" @click="jumpToLoginPage" style="margin-top: 20px;"></wTextButton>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onUnmounted } from 'vue';
 import router from '@/router/router';
 import wSubmitButton from './widgets/wSubmitButton.vue';
 import wTextButton from './widgets/wTextButton.vue';
@@ -47,7 +47,10 @@ const form = reactive({
 const errorMsg = ref('');
 const successMsg = ref('');
 const countdown = ref(0);
+const registering = ref(false);
 let timer = null;
+
+onUnmounted(() => { if (timer) clearInterval(timer); });
 
 async function handleSendCode() {
     if (!form.email) {
@@ -94,6 +97,8 @@ async function handleRegister() {
     }
 
     try {
+        if (registering.value) return;
+        registering.value = true;
         // Use spread to ensure we send current values (Task 2)
         const res = await register({ ...form, email: form.email.trim() });
         if (res.data.code === 200) {
@@ -105,6 +110,8 @@ async function handleRegister() {
         }
     } catch (e) {
         errorMsg.value = e.response?.data?.msg || '网络错误，请重试';
+    } finally {
+        registering.value = false;
     }
 }
 

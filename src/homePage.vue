@@ -167,11 +167,11 @@
 
         <!-- Main content -->
         <main class="sc2-main">
-            <!-- Mobile menu toggle -->
-            <button class="mobile-menu-btn" @click="toggleSidebar">
+            <!-- Mobile menu toggle (uses same double-arrow as desktop) -->
+            <button class="mobile-menu-btn" :class="{ rotated: !sidebarCollapsed }" @click="toggleSidebar">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="currentColor">
-                    <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+                    <path d="M440-240 200-480l240-240 56 56-183 184 183 184-56 56Zm264 0L464-480l240-240 56 56-183 184 183 184-56 56Z" />
                 </svg>
             </button>
             <!-- Mobile overlay -->
@@ -551,6 +551,13 @@ function handleLogout() {
     border-radius: 8px;
     padding: 8px;
     cursor: pointer;
+}
+
+.mobile-menu-btn svg {
+    transition: transform 0.3s;
+}
+.mobile-menu-btn.rotated svg {
+    transform: rotate(180deg);
 }
 
 .mobile-overlay {

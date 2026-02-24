@@ -50,10 +50,11 @@ export function updateProfile(userId, data) {
     return api.put(`/user/${userId}/profile`, data);
 }
 
-export function findMatches(mmr, range, race, mode) {
+export function findMatches(mmr, range, race, mode, minLevel) {
     const params = { mmr, range };
     if (race) params.race = race;
     if (mode) params.mode = mode;
+    if (minLevel !== undefined && minLevel !== null) params.minLevel = minLevel;
     return api.get('/user/match', { params });
 }
 

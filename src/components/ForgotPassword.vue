@@ -4,12 +4,12 @@
         <p class="form-subtitle">RESET PASSWORD</p>
         <form @submit.prevent>
             <div class="code-row">
-                <input type="email" class="wInputSmall" placeholder="注册邮箱" required v-model="email">
+                <input type="email" class="wInputSmall" placeholder="注册邮箱" required v-model="email" autocomplete="email">
                 <button type="button" class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0">
                     {{ countdown > 0 ? `${countdown}s` : '发送' }}
                 </button>
             </div>
-            <input type="text" class="wInput" placeholder="验证码" required v-model="code">
+            <input type="text" class="wInput" placeholder="验证码" required v-model="code" autocomplete="one-time-code">
             <input type="password" class="wInput" placeholder="新密码" required v-model="newPassword">
         </form>
         <wSubmitButton text="重 置 密 码" @click="handleReset" :loading="loading"></wSubmitButton>
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import wSubmitButton from './widgets/wSubmitButton.vue';
 import wTextButton from './widgets/wTextButton.vue';
 import '../css/widgets.css';
@@ -36,20 +36,26 @@ const loading = ref(false);
 
 let timer = null;
 
+onUnmounted(() => { if (timer) clearInterval(timer); });
+
 async function handleSendCode() {
     if (!email.value) {
         alert('请输入邮箱');
         return;
     }
+    // Start countdown immediately to prevent duplicate clicks
+    countdown.value = 60;
+    timer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value <= 0) clearInterval(timer);
+    }, 1000);
     try {
-        await sendEmailCode(email.value);
+        await sendEmailCode(email.value.trim());
         alert('验证码已发送到邮箱');
-        countdown.value = 60;
-        timer = setInterval(() => {
-            countdown.value--;
-            if (countdown.value <= 0) clearInterval(timer);
-        }, 1000);
     } catch (error) {
+        // Reset countdown on failure
+        clearInterval(timer);
+        countdown.value = 0;
         alert(error.response?.data?.msg || '发送失败');
     }
 }

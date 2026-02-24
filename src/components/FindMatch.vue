@@ -113,6 +113,13 @@
                     <span class="commander-name">不限</span>
                 </div>
             </div>
+
+            <div v-if="mode === 'coop'" style="padding:12px 18px;">
+                <label style="display:inline-block; width:84px; color:var(--sc2-text-dim)">最少等级</label>
+                <input type="number" v-model.number="coopMinLevel" placeholder="0" style="width:120px; padding:8px; border-radius:6px; border:1px solid var(--sc2-border); background:var(--sc2-bg-dark); color:var(--sc2-text);">
+                <span style="margin-left:12px; color:var(--sc2-text-dim); font-size:12px;">(筛选合作任务匹配玩家的最低等级)</span>
+            </div>
+
         </div>
 
         <!-- MMR Range & Actions -->
@@ -199,6 +206,7 @@ const matchResults = ref([]);
 const searched = ref(false);
 const use1v1Mmr = ref(false);
 const matchErrorMsg = ref('');
+const coopMinLevel = ref(null);
 
 const myCommander = ref('');
 const opponentCommander = ref('');
@@ -376,8 +384,8 @@ async function startMatch() {
     const mmr = userMmr.value || 0;
     try {
         if (props.mode === 'coop') {
-            // Task 6: For coop, we match by commander name
-            const res = await findMatches(0, 9999, opponentCommander.value, 'coop');
+            // Task 6: For coop, we match by commander name and optional min level
+            const res = await findMatches(0, 9999, opponentCommander.value, 'coop', coopMinLevel.value);
             matchResults.value = res.data.filter(p => props.user && p.id !== props.user.id);
         } else {
             const queryMode = use1v1Mmr.value ? '1v1' : props.mode;

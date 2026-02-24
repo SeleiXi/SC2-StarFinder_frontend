@@ -4,12 +4,12 @@
         <p class="form-subtitle">VERIFICATION CODE</p>
         <form @submit.prevent>
             <div class="code-row">
-                <input type="email" class="wInputSmall" placeholder="电子邮箱" required v-model="email">
+                <input type="email" class="wInputSmall" placeholder="电子邮箱" required v-model="email" autocomplete="email" name="login-email">
                 <button type="button" class="send-code-btn" @click="handleSendCode" :disabled="countdown > 0">
                     {{ countdown > 0 ? `${countdown}s` : '发送' }}
                 </button>
             </div>
-            <input type="text" class="wInput" placeholder="验证码" required v-model="code">
+            <input type="text" class="wInput" placeholder="验证码" required v-model="code" autocomplete="one-time-code" name="login-code">
         </form>
         <wSubmitButton text="登 录" @click="handleLogin" :loading="loading"></wSubmitButton>
         <div class="form-links">
@@ -20,11 +20,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import wSubmitButton from './widgets/wSubmitButton.vue';
 import wTextButton from './widgets/wTextButton.vue';
 import '../css/widgets.css';
-import { sendEmailCode, loginByCode } from '../api/api';
+import { sendEmailCode, loginByCode, saveUser } from '../api/api';
 
 const emit = defineEmits(['changeMode', 'jumpToRegisterPage', 'userLogin']);
 
@@ -35,22 +35,28 @@ const loading = ref(false);
 
 let timer = null;
 
+onUnmounted(() => { if (timer) clearInterval(timer); });
+
 async function handleSendCode() {
     if (!email.value) {
         alert('请输入邮箱');
         return;
     }
+    // Start countdown immediately to prevent duplicate clicks
+    countdown.value = 60;
+    timer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value <= 0) {
+            clearInterval(timer);
+        }
+    }, 1000);
     try {
-        await sendEmailCode(email.value);
+        await sendEmailCode(email.value.trim());
         alert('验证码已发送到邮箱，请查收');
-        countdown.value = 60;
-        timer = setInterval(() => {
-            countdown.value--;
-            if (countdown.value <= 0) {
-                clearInterval(timer);
-            }
-        }, 1000);
     } catch (error) {
+        // Reset countdown on failure
+        clearInterval(timer);
+        countdown.value = 0;
         alert(error.response?.data?.msg || '发送失败');
     }
 }
@@ -64,7 +70,8 @@ async function handleLogin() {
     try {
         const res = await loginByCode(email.value, code.value);
         if (res.data.code === 200) {
-            localStorage.setItem('user', JSON.stringify(res.data.data));
+            // Use shared helper to store token + user consistently
+            saveUser(res.data.data);
             emit('userLogin');
         } else {
             alert(res.data.msg);
