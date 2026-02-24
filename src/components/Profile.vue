@@ -5,7 +5,7 @@
             <div class="banner-bg"></div>
             <div class="banner-overlay"></div>
             <div class="profile-avatar-wrap">
-                <div class="profile-avatar"></div>
+                <div class="profile-avatar" :style="avatarStyle"></div>
                 <div class="avatar-ring"></div>
             </div>
         </div>
@@ -93,9 +93,18 @@
 </template>
 
 <script setup>
-defineProps({ user: Object });
+import { computed } from 'vue';
+const props = defineProps({ user: Object });
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 const emit = defineEmits(['jumpToProfileEditPage']);
+
+function getCommanderUrl(filename) {
+    return require(`../assets/commanders/${filename}.webp`);
+}
+
+const avatarStyle = computed(() => ({
+    backgroundImage: `url(${getCommanderUrl(props.user?.profilePic || 'raynor')})`
+}));
 
 function jumpToProfileEditPage() {
     emit('jumpToProfileEditPage');
@@ -139,8 +148,8 @@ function jumpToProfileEditPage() {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background-image: url('../assets/commanders/raynor.webp');
     background-size: cover;
+    background-position: center;
     border: 4px solid var(--sc2-bg-deep);
 }
 
