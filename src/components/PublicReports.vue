@@ -62,7 +62,7 @@ import { getStoredUser } from '../api/api.js';
 
 const router = useRouter();
 const currentUser = getStoredUser();
-const isAdmin = computed(() => currentUser?.role === 'admin');
+const isAdmin = computed(() => currentUser?.role === 'admin' || currentUser?.role === 'super_admin');
 
 function requireLogin(callback) {
     if (!currentUser) {

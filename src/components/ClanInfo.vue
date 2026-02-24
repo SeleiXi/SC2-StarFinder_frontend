@@ -176,7 +176,7 @@ function requireLogin(callback) {
     }
     callback();
 }
-const isAdmin = computed(() => currentUser?.role === 'admin');
+const isAdmin = computed(() => currentUser?.role === 'admin' || currentUser?.role === 'super_admin');
 const activeTab = ref('ranking');
 
 // ---- RANKING ----

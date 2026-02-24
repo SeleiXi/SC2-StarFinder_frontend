@@ -129,7 +129,7 @@
 
                 <!-- 管理后台 (admin only) -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 99 }" @click.prevent="switchPage(99)"
-                    v-if="isLogin && currentUser?.role === 'admin'">
+                    v-if="isLogin && (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
                         <path
