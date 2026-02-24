@@ -1,7 +1,23 @@
 <template>
     <div class="profile-edit">
+        <!-- Commander picker overlay -->
+        <div class="picture-picker-overlay" v-if="showPicturePicker" @click.self="showPicturePicker = false">
+            <div class="picture-picker-panel sc2-panel">
+                <h3 class="picker-title">选择头像</h3>
+                <div class="commander-grid">
+                    <div v-for="cmd in commanders" :key="cmd.id" class="commander-option"
+                        :class="{ selected: form.profilePic === commanderFiles[cmd.name] }"
+                        @click="choosePicture(commanderFiles[cmd.name])">
+                        <div class="commander-thumb"
+                            :style="{ backgroundImage: `url(${getCommanderUrl(commanderFiles[cmd.name])})` }"></div>
+                        <span class="commander-name-label">{{ cmd.name }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="edit-avatar-section">
-            <div class="edit-avatar" @click="selectProfilePicture">
+            <div class="edit-avatar" @click="selectProfilePicture" :style="avatarStyle">
                 <div class="avatar-mask">
                     <svg xmlns="http://www.w3.org/2000/svg" height="36px" viewBox="0 -960 960 960" width="36px"
                         fill="currentColor">
@@ -98,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { updateProfile, saveUser } from '../api/api.js';
 import '../css/widgets.css';
 
@@ -117,6 +133,7 @@ const form = ref({
     signature: '',
     commander: '',
     coopLevel: '',
+    profilePic: '',
     mmr: 0,
     mmrTerran: 0,
     mmrZerg: 0,
@@ -129,6 +146,7 @@ const form = ref({
 const errorMsg = ref('');
 const successMsg = ref('');
 const savingMsg = ref('');
+const showPicturePicker = ref(false);
 let debounceTimer = null;
 let isInitialLoad = true;
 
@@ -141,6 +159,23 @@ const commanders = [
     { id: 16, name: '泽拉图' }, { id: 17, name: '斯台特曼' }, { id: 18, name: '蒙斯克' }
 ];
 
+const commanderFiles = {
+    '雷诺': 'raynor', '凯瑞甘': 'kerrigan', '阿塔尼斯': 'artanis',
+    '斯旺': 'swann', '扎加拉': 'zagara', '沃拉尊': 'vorazun',
+    '卡拉克斯': 'karax', '阿巴瑟': 'abathur', '阿拉纳克': 'alarak',
+    '诺娃': 'nova', '斯托科夫': 'stukov', '菲尼克斯': 'fenix',
+    '德哈卡': 'dehaka', '霍纳与汉': 'hanhorner', '泰凯斯': 'tychus',
+    '泽拉图': 'zeratul', '斯台特曼': 'stetmann', '蒙斯克': 'mengsk'
+};
+
+function getCommanderUrl(filename) {
+    return require(`../assets/commanders/${filename}.webp`);
+}
+
+const avatarStyle = computed(() => ({
+    backgroundImage: `url(${getCommanderUrl(form.value.profilePic || 'raynor')})`
+}));
+
 onMounted(() => {
     if (props.user) {
         form.value = {
@@ -152,6 +187,7 @@ onMounted(() => {
             race: props.user.race || '',
             commander: props.user.commander || '',
             coopLevel: props.user.coopLevel || '',
+            profilePic: props.user.profilePic || '',
             region: props.user.region || '',
             streamUrl: props.user.streamUrl || '',
             signature: props.user.signature || '',
@@ -225,10 +261,105 @@ async function saveProfile() {
     }
 }
 
-function selectProfilePicture() { /* placeholder */ }
+function selectProfilePicture() {
+    showPicturePicker.value = true;
+}
+
+function choosePicture(filename) {
+    form.value.profilePic = filename;
+    showPicturePicker.value = false;
+}
 </script>
 
 <style scoped>
+.picture-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.picture-picker-panel {
+    max-width: 640px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.picker-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sc2-accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.commander-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
+.commander-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.commander-option:hover {
+    border-color: var(--sc2-border);
+    background: var(--sc2-bg-hover);
+}
+
+.commander-option.selected {
+    border-color: var(--sc2-accent);
+    background: rgba(0, 180, 216, 0.1);
+}
+
+.commander-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--sc2-border);
+}
+
+.commander-option.selected .commander-thumb {
+    border-color: var(--sc2-accent);
+}
+
+.commander-name-label {
+    font-size: 11px;
+    color: var(--sc2-text-dim);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.commander-option.selected .commander-name-label {
+    color: var(--sc2-accent);
+}
+
+@media (max-width: 480px) {
+    .commander-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 .profile-edit {
     max-width: 600px;
     margin: 0 auto;
@@ -245,8 +376,8 @@ function selectProfilePicture() { /* placeholder */ }
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    background-image: url('../assets/commanders/raynor.webp');
     background-size: cover;
+    background-position: center;
     cursor: pointer;
     position: relative;
     border: 3px solid var(--sc2-border);

@@ -142,7 +142,7 @@
             <div class="sidebar-footer">
                 <a href="#" class="nav-item user-item" v-if="isLogin" :class="{ active: currentId === 12 }"
                     @click.prevent="switchPage(12)">
-                    <div class="avatar-mini"></div>
+                    <div class="avatar-mini" :style="avatarMiniStyle"></div>
                     <span class="nav-label">{{ currentUser?.battleTag || currentUser?.email || '个人信息' }}</span>
                 </a>
                 <button class="nav-item logout-btn" v-if="isLogin" @click="handleLogout"
@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 import findMatch from './components/FindMatch.vue';
@@ -318,6 +318,14 @@ function handleLogout() {
     clearUser();
     router.push({ name: 'loginPage' });
 }
+
+function getCommanderUrl(filename) {
+    return require(`./assets/commanders/${filename}.webp`);
+}
+
+const avatarMiniStyle = computed(() => ({
+    backgroundImage: `url(${getCommanderUrl(currentUser.value?.profilePic || 'raynor')})`
+}));
 </script>
 
 <style scoped>
@@ -523,8 +531,8 @@ function handleLogout() {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-image: url('./assets/commanders/raynor.webp');
     background-size: cover;
+    background-position: center;
     border: 2px solid var(--sc2-accent);
     flex-shrink: 0;
 }
