@@ -61,7 +61,7 @@
                     <button :class="{ active: coachingTab === 'coach' }" @click="loadCoaching('coach')">提供陪练</button>
                     <button :class="{ active: coachingTab === 'find' }" @click="loadCoaching('find')">寻找陪练</button>
                 </div>
-                <button class="add-btn" @click="showCoachingForm = true" v-if="currentUser">+ 发布信息</button>
+                <button class="add-btn" @click="requireLogin(() => showCoachingForm = true)">+ 发布信息</button>
             </div>
 
             <!-- Coaching Form -->
@@ -122,7 +122,7 @@
                     <button v-for="cat in textCategories" :key="cat"
                         :class="{ active: textCat === cat }" @click="loadTextTutorials(cat)">{{ cat }}</button>
                 </div>
-                <button class="add-btn" @click="showTextForm = true" v-if="currentUser">+ 发布文章</button>
+                <button class="add-btn" @click="requireLogin(() => showTextForm = true)">+ 发布文章</button>
             </div>
 
             <!-- Text Tutorial Form -->
@@ -165,7 +165,7 @@
                     <button v-for="cat in replayCategories" :key="cat"
                         :class="{ active: replayCat === cat }" @click="loadReplays(cat)">{{ cat }}</button>
                 </div>
-                <button class="add-btn" @click="showReplayForm = true" v-if="currentUser">+ 上传Replay</button>
+                <button class="add-btn" @click="requireLogin(() => showReplayForm = true)">+ 上传Replay</button>
             </div>
 
             <div v-if="showReplayForm" class="form-panel sc2-panel">
@@ -212,11 +212,21 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { getTutorials, getStoredUser } from '../api/api.js';
 
+const router = useRouter();
 const activeSection = ref('video');
 const currentUser = getStoredUser();
+
+function requireLogin(callback) {
+    if (!currentUser) {
+        router.push({ name: 'loginPage' });
+        return;
+    }
+    callback();
+}
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 
 // ---- VIDEO ----

@@ -229,16 +229,16 @@ const sidebarCollapsed = ref(false);
 const profileEditMode = ref(false);
 const isLogin = ref(false);
 const currentUser = ref(null);
-const currentId = ref(2);
+const currentId = ref(8);
 const openMenus = reactive({ match: true, cheat: false });
 
 // Map URL path to page ID
 function pathToId(path) {
-    if (!path || path === '/') return 2;
+    if (!path || path === '/') return 8;
     if (path.startsWith('/match/')) {
         const mode = path.replace('/match/', '');
         const map = { '1v1': 2, '2v2': 3, '3v3': 4, '4v4': 5, 'coop': 6 };
-        return map[mode] || 2;
+        return map[mode] || 8;
     }
     const map = {
         '/events': 7, '/tutorial': 8, '/profile': 12, '/streams': 13,
@@ -248,7 +248,7 @@ function pathToId(path) {
     for (const [k, v] of Object.entries(map)) {
         if (path === k || path.startsWith(k + '/')) return v;
     }
-    return 2;
+    return 8;
 }
 
 // Map page ID to URL path
@@ -345,6 +345,14 @@ function handleLogout() {
 
 .sc2-sidebar.collapsed {
     width: 60px;
+}
+
+.sc2-sidebar.collapsed .nav-label {
+    display: none;
+}
+
+.sc2-sidebar.collapsed .chevron {
+    display: none;
 }
 
 .sidebar-header {
@@ -515,7 +523,7 @@ function handleLogout() {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-image: url('./assets/pics/profile-image.png');
+    background-image: url('./assets/commanders/raynor.webp');
     background-size: cover;
     border: 2px solid var(--sc2-accent);
     flex-shrink: 0;
@@ -533,9 +541,9 @@ function handleLogout() {
 .mobile-menu-btn {
     display: none;
     position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
     z-index: 999;
     background: var(--sc2-bg-panel);
     border: 1px solid var(--sc2-border);
@@ -589,7 +597,7 @@ function handleLogout() {
         z-index: 1000;
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 260px;
+        width: 250px;
     }
 
     .sc2-sidebar:not(.collapsed) {
@@ -597,8 +605,15 @@ function handleLogout() {
     }
 
     .sc2-sidebar.collapsed {
-        width: 260px;
+        width: 250px;
         transform: translateX(-100%);
+    }
+
+    /* Ensure nav labels don't overflow in mobile sidebar */
+    .sc2-sidebar .nav-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .mobile-menu-btn {

@@ -139,7 +139,7 @@ function jumpToProfileEditPage() {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background-image: url('../assets/pics/profile-image.png');
+    background-image: url('../assets/commanders/raynor.webp');
     background-size: cover;
     border: 4px solid var(--sc2-bg-deep);
 }

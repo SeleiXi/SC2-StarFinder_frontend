@@ -92,14 +92,13 @@
             </form>
             <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
             <span v-if="successMsg" class="success-msg">{{ successMsg }}</span>
-            <wSubmitButton text="保存修改" @click="saveProfile"></wSubmitButton>
+            <span v-if="savingMsg" class="saving-msg">{{ savingMsg }}</span>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import wSubmitButton from './widgets/wSubmitButton.vue';
+import { ref, onMounted, watch } from 'vue';
 import { updateProfile, saveUser } from '../api/api.js';
 import '../css/widgets.css';
 
@@ -129,6 +128,9 @@ const form = ref({
 });
 const errorMsg = ref('');
 const successMsg = ref('');
+const savingMsg = ref('');
+let debounceTimer = null;
+let isInitialLoad = true;
 
 const commanders = [
     { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
@@ -163,7 +165,43 @@ onMounted(() => {
             mmr4v4: props.user.mmr4v4 || 0
         };
     }
+    // Mark initial load complete after a short delay
+    setTimeout(() => { isInitialLoad = false; }, 100);
 });
+
+// Auto-save with debounce
+watch(form, () => {
+    if (isInitialLoad || !props.user?.id) return;
+    
+    savingMsg.value = '保存中...';
+    errorMsg.value = '';
+    successMsg.value = '';
+    
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+        await autoSaveProfile();
+    }, 600);
+}, { deep: true });
+
+async function autoSaveProfile() {
+    try {
+        const res = await updateProfile(props.user.id, form.value);
+        if (res.data.code === 200) {
+            const updatedUser = res.data.data;
+            saveUser(updatedUser);
+            savingMsg.value = '';
+            successMsg.value = '已保存';
+            // Note: No emit here to stay on edit page
+            setTimeout(() => { successMsg.value = ''; }, 2000);
+        } else {
+            savingMsg.value = '';
+            errorMsg.value = res.data.msg || '保存失败';
+        }
+    } catch (e) {
+        savingMsg.value = '';
+        errorMsg.value = '网络错误，请稍后再试';
+    }
+}
 
 async function saveProfile() {
     errorMsg.value = '';
@@ -207,7 +245,7 @@ function selectProfilePicture() { /* placeholder */ }
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    background-image: url('../assets/pics/profile-image.png');
+    background-image: url('../assets/commanders/raynor.webp');
     background-size: cover;
     cursor: pointer;
     position: relative;
@@ -357,6 +395,14 @@ function selectProfilePicture() { /* placeholder */ }
     display: block;
     text-align: center;
     color: var(--sc2-success);
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.saving-msg {
+    display: block;
+    text-align: center;
+    color: var(--sc2-accent);
     font-size: 13px;
     margin-top: 10px;
 }

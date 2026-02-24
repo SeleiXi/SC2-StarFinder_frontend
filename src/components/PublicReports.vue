@@ -10,7 +10,7 @@
                 <button class="search-btn" @click="doSearch">搜索</button>
                 <button class="clear-btn" @click="clearSearch" v-if="searchQuery">清除</button>
             </div>
-            <button class="add-btn" @click="showForm = true" v-if="currentUser">+ 新增记录</button>
+            <button class="add-btn" @click="requireLogin(() => showForm = true)">+ 新增记录</button>
         </div>
 
         <!-- Report Form -->
@@ -56,11 +56,21 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { getStoredUser } from '../api/api.js';
 
+const router = useRouter();
 const currentUser = getStoredUser();
 const isAdmin = computed(() => currentUser?.role === 'admin');
+
+function requireLogin(callback) {
+    if (!currentUser) {
+        router.push({ name: 'loginPage' });
+        return;
+    }
+    callback();
+}
 
 const reports = ref([]);
 const loading = ref(false);
@@ -100,6 +110,12 @@ async function clearSearch() {
 async function submitReport() {
     errorMsg.value = '';
     successMsg.value = '';
+    
+    if (!currentUser?.id) {
+        router.push({ name: 'loginPage' });
+        return;
+    }
+    
     if (!form.value.gameId.trim()) { errorMsg.value = '请填写游戏ID'; return; }
     if (!form.value.description.trim()) { errorMsg.value = '请填写描述'; return; }
 

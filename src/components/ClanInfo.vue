@@ -103,7 +103,7 @@
         <div v-if="activeTab === 'recruit'">
             <div class="section-header-row">
                 <p class="section-desc">战队在此发布招新信息，玩家也可申请加入心仪战队。</p>
-                <button class="add-btn" @click="showRecruitForm = true" v-if="currentUser">+ 发布招新</button>
+                <button class="add-btn" @click="requireLogin(() => showRecruitForm = true)">+ 发布招新</button>
             </div>
 
             <!-- Recruit Form -->
@@ -162,10 +162,20 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { getStoredUser } from '../api/api.js';
 
+const router = useRouter();
 const currentUser = getStoredUser();
+
+function requireLogin(callback) {
+    if (!currentUser) {
+        router.push({ name: 'loginPage' });
+        return;
+    }
+    callback();
+}
 const isAdmin = computed(() => currentUser?.role === 'admin');
 const activeTab = ref('ranking');
 

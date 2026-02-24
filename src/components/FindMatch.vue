@@ -141,21 +141,8 @@
                 </button>
                 <span class="mode-tag">{{ mode }}</span>
             </div>
+            <div v-if="matchErrorMsg" class="match-error-msg">{{ matchErrorMsg }}</div>
         </div>
-
-        <details v-if="mode === 'coop'" class="sc2-panel commander-panel">
-            <summary class="commander-summary">
-                <span class="panel-title">修改常用指挥官</span>
-                <span class="summary-hint">可选</span>
-            </summary>
-            <div class="commander-grid">
-                <div v-for="cmd in commanders" :key="cmd.id" class="commander-card" 
-                    :class="{ selected: myCommander === cmd.name }" @click="myCommander = cmd.name">
-                    <img :src="cmd.img" :alt="cmd.name" class="commander-portrait-img">
-                    <span class="commander-name">{{ cmd.name }}</span>
-                </div>
-            </div>
-        </details>
 
         <!-- Match Results -->
         <div v-if="matchResults.length > 0" class="sc2-panel results-panel">
@@ -194,7 +181,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { findMatches, updateProfile, saveUser } from '../api/api.js';
+
+const router = useRouter();
 
 const props = defineProps({
     mode: String,
@@ -204,13 +194,47 @@ const emit = defineEmits(['profileUpdated']);
 
 const myRace = ref('T'); // default to Terran
 const opponentRace = ref('');
-const mmrRange = ref(100);
+const mmrRange = ref(1000);
 const matchResults = ref([]);
 const searched = ref(false);
 const use1v1Mmr = ref(false);
+const matchErrorMsg = ref('');
 
 const myCommander = ref('');
 const opponentCommander = ref('');
+
+function validateMatchRequirements() {
+    if (!props.user) return '请先登录';
+    
+    // Check if user has at least one battle tag
+    const hasBattleTag = props.user.battleTagCN || props.user.battleTagUS || 
+                        props.user.battleTagEU || props.user.battleTagKR;
+    if (!hasBattleTag) {
+        return '请先在个人资料中填写至少一个战网ID';
+    }
+    
+    // Check if user has corresponding MMR for the mode
+    let hasMmr = false;
+    if (props.mode === 'coop') {
+        // Coop mode doesn't require MMR
+        hasMmr = true;
+    } else if (props.mode === '1v1' || use1v1Mmr.value) {
+        hasMmr = props.user.mmrTerran || props.user.mmrZerg || 
+                 props.user.mmrProtoss || props.user.mmrRandom || props.user.mmr;
+    } else if (props.mode === '2v2') {
+        hasMmr = props.user.mmr2v2 || props.user.mmr;
+    } else if (props.mode === '3v3') {
+        hasMmr = props.user.mmr3v3 || props.user.mmr;
+    } else if (props.mode === '4v4') {
+        hasMmr = props.user.mmr4v4 || props.user.mmr;
+    }
+    
+    if (!hasMmr) {
+        return `请先在个人资料中填写${props.mode}的MMR分数`;
+    }
+    
+    return null;
+}
 
 // Initialize race and commander from user profile
 onMounted(() => {
@@ -340,6 +364,14 @@ function getDisplayMmr(p) {
 }
 
 async function startMatch() {
+    matchErrorMsg.value = '';
+    
+    const validationError = validateMatchRequirements();
+    if (validationError) {
+        matchErrorMsg.value = validationError;
+        return;
+    }
+    
     searched.value = true;
     const mmr = userMmr.value || 0;
     try {

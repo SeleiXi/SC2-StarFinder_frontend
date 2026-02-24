@@ -50,9 +50,11 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import wSubmitButton from './widgets/wSubmitButton.vue';
 import { reportCheater } from '../api/api.js';
 
+const router = useRouter();
 const props = defineProps({ user: Object });
 
 const battleTag = ref('');
@@ -65,6 +67,13 @@ const errorMsg = ref('');
 async function submitReport() {
     successMsg.value = '';
     errorMsg.value = '';
+    
+    // Check login first
+    if (!props.user?.id) {
+        router.push({ name: 'loginPage' });
+        return;
+    }
+    
     if (!battleTag.value) {
         errorMsg.value = '请输入战网ID';
         return;
