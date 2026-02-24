@@ -179,7 +179,7 @@ async function submitStream() {
             formMsgType.value = 'error';
         }
     } catch (e) {
-        formMsg.value = '发布失败，请稍后再试';
+        formMsg.value = e.response?.data?.msg || e.message || '发布失败，请稍后再试';
         formMsgType.value = 'error';
     } finally {
         submitting.value = false;
@@ -192,7 +192,7 @@ async function handleDelete(id) {
         await deleteStream(id, currentUser.id);
         await loadStreams();
     } catch (e) {
-        alert('删除失败');
+        alert(e.response?.data?.msg || e.message || '删除失败');
     }
 }
 

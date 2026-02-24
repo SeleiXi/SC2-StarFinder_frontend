@@ -80,7 +80,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import axios from '../api/api.js';
 
 const battleTag = ref('');
 const loading = ref(false);
@@ -109,7 +109,7 @@ async function search() {
     results.value = [];
 
     try {
-        const res = await axios.get('/api/sc2/full-mmr', { params: { battleTag: battleTag.value } });
+        const res = await axios.get('/sc2/full-mmr', { params: { battleTag: battleTag.value } });
         if (res.data.code === 200 || res.data.success) {
             results.value = res.data.data;
         } else {

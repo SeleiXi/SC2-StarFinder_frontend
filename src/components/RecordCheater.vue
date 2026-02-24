@@ -104,7 +104,7 @@ async function submitReport() {
             errorMsg.value = res.data.msg || '提交失败';
         }
     } catch (e) {
-        errorMsg.value = '网络错误';
+        errorMsg.value = e.response?.data?.msg || e.message || '网络错误';
     }
 }
 </script>

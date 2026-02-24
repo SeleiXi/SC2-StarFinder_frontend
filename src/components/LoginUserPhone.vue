@@ -58,7 +58,7 @@ async function handleSendCode() {
         // Reset countdown on failure
         clearInterval(timer);
         countdown.value = 0;
-        alert(error.response?.data?.msg || '发送失败');
+        alert(error.message || '发送失败');
     }
 }
 
@@ -78,7 +78,7 @@ async function handleLogin() {
             alert(res.data.msg);
         }
     } catch (error) {
-        alert(error.response?.data?.msg || '登录失败');
+        alert(error.message || '登录失败');
     } finally {
         loading.value = false;
     }

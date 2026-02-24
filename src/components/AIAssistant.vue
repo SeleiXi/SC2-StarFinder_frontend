@@ -29,7 +29,7 @@
 
 <script setup>
 import { ref, nextTick } from 'vue';
-import axios from 'axios';
+import api from '../api/api';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
@@ -56,7 +56,7 @@ async function sendMessage() {
     await scrollToBottom();
 
     try {
-        const response = await axios.post('/api/ai/query', { prompt: userPrompt });
+        const response = await api.post('/ai/query', { prompt: userPrompt });
         if (response.data.code === 200 && response.data.data) {
             messages.value.push({ role: 'ai', content: response.data.data });
         } else {
@@ -64,7 +64,7 @@ async function sendMessage() {
         }
     } catch (e) {
         console.error('AI API Error:', e);
-        messages.value.push({ role: 'ai', content: '由于网络或配置问题，AI 响应失败。' });
+        messages.value.push({ role: 'ai', content: '由于无法连接到服务器：' + (e.message || '网络错误') });
     } finally {
         loading.value = false;
         await scrollToBottom();

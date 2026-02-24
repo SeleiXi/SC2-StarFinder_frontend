@@ -78,7 +78,7 @@ async function handleSendCode() {
         clearInterval(timer);
         countdown.value = 0;
         successMsg.value = '';
-        errorMsg.value = e.response?.data?.msg || '发送失败，请重试';
+        errorMsg.value = e.message || '发送失败，请重试';
     }
 }
 
@@ -109,7 +109,7 @@ async function handleRegister() {
             errorMsg.value = res.data.msg || '注册失败';
         }
     } catch (e) {
-        errorMsg.value = e.response?.data?.msg || '网络错误，请重试';
+        errorMsg.value = e.message || '网络错误，请重试';
     } finally {
         registering.value = false;
     }

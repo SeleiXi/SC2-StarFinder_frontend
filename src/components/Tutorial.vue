@@ -213,8 +213,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { getTutorials, getStoredUser } from '../api/api.js';
+import { getTutorials, getStoredUser, createCoachingPost, getCoachingPosts, getTextTutorials, getTextTutorialCategories, createTextTutorial, getReplays } from '../api/api.js';
+import api from '../api/api.js';
 
 const router = useRouter();
 const activeSection = ref('video');
@@ -236,7 +236,7 @@ const currentCat = ref('');
 
 async function loadVideoCategories() {
     try {
-        const res = await axios.get('/api/tutorial/categories');
+        const res = await api.get('/tutorial/categories');
         videoCategories.value = res.data?.data || [];
     } catch (e) { videoCategories.value = []; }
 }
@@ -261,8 +261,7 @@ const coachForm = ref({ title: '', postType: 'coach', race: '', mmr: null, price
 async function loadCoaching(type) {
     coachingTab.value = type;
     try {
-        const params = type !== 'all' ? { type } : {};
-        const res = await axios.get('/api/coaching/list', { params });
+        const res = await getCoachingPosts(type);
         coachingPosts.value = res.data?.data || [];
     } catch (e) { coachingPosts.value = []; }
 }
@@ -275,7 +274,7 @@ async function submitCoaching() {
     coachSubmitting.value = true;
     coachMsg.value = '';
     try {
-        const res = await axios.post('/api/coaching', { ...coachForm.value, userId: currentUser?.id });
+        const res = await createCoachingPost({ ...coachForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
             coachMsg.value = '发布成功！';
             showCoachingForm.value = false;
@@ -284,7 +283,7 @@ async function submitCoaching() {
         } else {
             coachMsg.value = res.data.msg || '发布失败';
         }
-    } catch (e) { coachMsg.value = '发布失败，请稍后再试'; }
+    } catch (e) { coachMsg.value = e.response?.data?.msg || e.message || '发布失败，请稍后再试'; }
     finally { coachSubmitting.value = false; }
 }
 
@@ -300,7 +299,7 @@ const expandedText = ref(null);
 
 async function loadTextCategories() {
     try {
-        const res = await axios.get('/api/text-tutorial/categories');
+        const res = await getTextTutorialCategories();
         textCategories.value = res.data?.data || [];
     } catch (e) { textCategories.value = []; }
 }
@@ -308,8 +307,7 @@ async function loadTextCategories() {
 async function loadTextTutorials(cat) {
     textCat.value = cat;
     try {
-        const params = cat ? { category: cat } : {};
-        const res = await axios.get('/api/text-tutorial/list', { params });
+        const res = await getTextTutorials(cat);
         textTutorials.value = res.data?.data || [];
     } catch (e) { textTutorials.value = []; }
 }
@@ -322,7 +320,7 @@ async function submitTextTutorial() {
     textSubmitting.value = true;
     textMsg.value = '';
     try {
-        const res = await axios.post('/api/text-tutorial', { ...textForm.value, userId: currentUser?.id });
+        const res = await createTextTutorial({ ...textForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
             textMsg.value = '发布成功！';
             showTextForm.value = false;
@@ -332,7 +330,7 @@ async function submitTextTutorial() {
         } else {
             textMsg.value = res.data.msg || '发布失败';
         }
-    } catch (e) { textMsg.value = '发布失败，请稍后再试'; }
+    } catch (e) { textMsg.value = e.response?.data?.msg || e.message || '发布失败，请稍后再试'; }
     finally { textSubmitting.value = false; }
 }
 
@@ -353,8 +351,7 @@ function handleDrop(e) { replayForm.value.file = e.dataTransfer.files[0] || null
 async function loadReplays(cat) {
     replayCat.value = cat;
     try {
-        const params = cat ? { category: cat } : {};
-        const res = await axios.get('/api/replay/list', { params });
+        const res = await getReplays(cat);
         const data = res.data?.data || [];
         replays.value = data;
         const cats = [...new Set(data.map(r => r.category).filter(Boolean))];
@@ -385,7 +382,7 @@ async function submitReplay() {
         fd.append('title', replayForm.value.title);
         fd.append('description', replayForm.value.description || '');
         fd.append('category', replayForm.value.category || '');
-        const res = await axios.post('/api/replay', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        const res = await api.post('/replay', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         if (res.data.code === 200) {
             replayMsg.value = '上传成功！';
             showReplayForm.value = false;

@@ -20,6 +20,26 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Standardize response errors and handle auth expiration globally
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error && error.response) {
+            const status = error.response.status;
+            const serverMsg = error.response.data?.msg;
+            // If unauthorized, clear stored user and token so UI can react
+            if (status === 401) {
+                clearUser();
+            }
+            // Normalize message for downstream catch blocks
+            error.message = serverMsg || error.response.statusText || `HTTP ${status}`;
+        } else {
+            error.message = error.message || '网络错误，请重试';
+        }
+        return Promise.reject(error);
+    }
+);
+
 // ============ User APIs ============
 
 export function register(data) {
@@ -176,8 +196,10 @@ export function getTutorialCategories() {
 
 // ============ Clan APIs ============
 
-export function getClanRanking(query = '') {
-    return api.get('/clan/ranking', { params: query ? { query } : {} });
+export function getClanRanking(query = '', sortBy = 'avgRating') {
+    const params = { sortBy };
+    if (query) params.query = query;
+    return api.get('/clan/ranking', { params });
 }
 
 export function getClanRecruitments() {

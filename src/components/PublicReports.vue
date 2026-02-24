@@ -57,8 +57,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { getStoredUser } from '../api/api.js';
+import { getStoredUser, getPublicReports, createPublicReport } from '../api/api.js';
+import axios from '../api/api.js';
 
 const router = useRouter();
 const currentUser = getStoredUser();
@@ -92,7 +92,7 @@ async function loadReports(search) {
     loading.value = true;
     try {
         const params = search ? { search } : {};
-        const res = await axios.get('/api/public-report/list', { params });
+        const res = await axios.get('/public-report/list', { params });
         reports.value = res.data?.data || [];
     } catch (e) { reports.value = []; }
     finally { loading.value = false; }
@@ -121,7 +121,7 @@ async function submitReport() {
 
     submitting.value = true;
     try {
-        const res = await axios.post('/api/public-report', {
+        const res = await axios.post('/public-report', {
             ...form.value,
             userId: currentUser?.id
         });
@@ -134,7 +134,7 @@ async function submitReport() {
             errorMsg.value = res.data.msg || '提交失败';
         }
     } catch (e) {
-        errorMsg.value = e.response?.data?.msg || '提交失败，请稍后再试';
+        errorMsg.value = e.response?.data?.msg || e.message || '提交失败，请稍后再试';
     } finally {
         submitting.value = false;
     }
@@ -143,7 +143,7 @@ async function submitReport() {
 async function deleteReport(id) {
     if (!confirm('确认删除此记录？')) return;
     try {
-        await axios.delete(`/api/public-report/${id}`, { params: { adminId: currentUser?.id } });
+        await axios.delete(`/public-report/${id}`, { params: { adminId: currentUser?.id } });
         await loadReports(searchQuery.value);
     } catch (e) { alert('删除失败'); }
 }

@@ -163,8 +163,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { getStoredUser } from '../api/api.js';
+import { getStoredUser, getClanRanking, getClanRecruitments, createClanRecruitment, deleteClanRecruitment } from '../api/api.js';
+import api from '../api/api.js';
 
 const router = useRouter();
 const currentUser = getStoredUser();
@@ -187,7 +187,7 @@ const sortBy = ref('avgRating');
 async function loadRanking() {
     rankLoading.value = true;
     try {
-        const res = await axios.get('/api/clan/ranking', { params: { sortBy: sortBy.value } });
+        const res = await getClanRanking('', sortBy.value);
         ranking.value = res.data?.data || [];
     } catch (e) { ranking.value = []; }
     finally { rankLoading.value = false; }
@@ -210,7 +210,7 @@ async function searchClans() {
     searching.value = true;
     hasSearched.value = true;
     try {
-        const res = await axios.get('/api/clan/ranking', { params: { query: searchQuery.value } });
+        const res = await getClanRanking(searchQuery.value, sortBy.value);
         searchResults.value = res.data?.data || [];
     } catch (e) { searchResults.value = []; }
     finally { searching.value = false; }
@@ -225,7 +225,7 @@ const recruitForm = ref({ clanName: '', clanTag: '', region: '', minMmr: null, m
 
 async function loadRecruitments() {
     try {
-        const res = await axios.get('/api/clan/recruitment');
+        const res = await getClanRecruitments();
         recruitments.value = res.data?.data || [];
     } catch (e) { recruitments.value = []; }
 }
@@ -238,7 +238,7 @@ async function submitRecruitment() {
     recruitSubmitting.value = true;
     recruitMsg.value = '';
     try {
-        const res = await axios.post('/api/clan/recruitment', {
+        const res = await createClanRecruitment({
             ...recruitForm.value,
             userId: currentUser?.id
         });
@@ -250,16 +250,16 @@ async function submitRecruitment() {
         } else {
             recruitMsg.value = res.data.msg || '发布失败';
         }
-    } catch (e) { recruitMsg.value = '发布失败，请稍后再试'; }
+    } catch (e) { recruitMsg.value = e.response?.data?.msg || e.message || '发布失败，请稍后再试'; }
     finally { recruitSubmitting.value = false; }
 }
 
 async function deleteRecruitment(id) {
     if (!confirm('确认删除？')) return;
     try {
-        await axios.delete(`/api/clan/recruitment/${id}`, { params: { userId: currentUser?.id } });
+        await deleteClanRecruitment(id, currentUser?.id);
         await loadRecruitments();
-    } catch (e) { alert('删除失败'); }
+    } catch (e) { alert(e.response?.data?.msg || e.message || '删除失败'); }
 }
 
 function formatDate(d) {
