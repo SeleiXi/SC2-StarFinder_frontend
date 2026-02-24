@@ -112,6 +112,14 @@ function userLogin() {
     margin-top: 8px;
 }
 
+/* Hide the textual cover titles on small screens (mobile) per UI spec */
+@media (max-width: 640px) {
+    .cover-title,
+    .cover-subtitle {
+        display: none;
+    }
+}
+
 .auth-form-area {
     flex: 1;
     background: var(--sc2-bg-panel);

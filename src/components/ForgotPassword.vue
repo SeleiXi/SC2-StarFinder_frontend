@@ -50,8 +50,8 @@ async function handleSendCode() {
         if (countdown.value <= 0) clearInterval(timer);
     }, 1000);
     try {
-        await sendEmailCode(email.value.trim());
-        alert('验证码已发送到邮箱');
+        await sendEmailCode(email.value.trim(), true);
+        // Per UX: do not show success alert for verification-code send in password recovery.
     } catch (error) {
         // Reset countdown on failure
         clearInterval(timer);

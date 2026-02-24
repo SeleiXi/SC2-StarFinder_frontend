@@ -88,4 +88,30 @@ import Register from './components/Register.vue';
     justify-content: center;
     padding: 20px 0;
 }
+/* Mobile layout: hide cover and stretch form to full width for easier input */
+@media (max-width: 640px) {
+    .sc2-auth-container {
+        width: 100%;
+        min-height: 100vh;
+        flex-direction: column;
+        align-items: stretch;
+        height: auto;
+    }
+    .auth-cover {
+        display: none;
+    }
+    .auth-form-area {
+        width: 100%;
+        padding: 24px;
+        box-sizing: border-box;
+        justify-content: flex-start;
+    }
+}
+/* Hide the textual cover titles on small screens (mobile) per UI spec */
+@media (max-width: 640px) {
+    .cover-title,
+    .cover-subtitle {
+        display: none;
+    }
+}
 </style>

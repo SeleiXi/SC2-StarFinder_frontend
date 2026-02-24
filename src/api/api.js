@@ -38,8 +38,8 @@ export function resetPassword(email, code, newPassword) {
     return api.post('/user/password/reset', null, { params: { email, code, newPassword } });
 }
 
-export function sendEmailCode(email) {
-    return api.post('/email/send', null, { params: { email } });
+export function sendEmailCode(email, requireRegistered = false) {
+    return api.post('/email/send', null, { params: { email, requireRegistered } });
 }
 
 export function getUserProfile(userId) {

@@ -51,8 +51,9 @@ async function handleSendCode() {
         }
     }, 1000);
     try {
-        await sendEmailCode(email.value.trim());
-        alert('验证码已发送到邮箱，请查收');
+        await sendEmailCode(email.value.trim(), true);
+        // Per UX: don't show a success alert for verification-code send on login flows.
+        // countdown already started to prevent duplicate clicks.
     } catch (error) {
         // Reset countdown on failure
         clearInterval(timer);
