@@ -142,7 +142,7 @@
             <div class="sidebar-footer">
                 <a href="#" class="nav-item user-item" v-if="isLogin" :class="{ active: currentId === 12 }"
                     @click.prevent="switchPage(12)">
-                    <div class="avatar-mini"></div>
+                    <div class="avatar-mini" :style="getUserAvatarStyle(currentUser?.avatar)"></div>
                     <span class="nav-label">{{ currentUser?.battleTag || currentUser?.email || '个人信息' }}</span>
                 </a>
                 <button class="nav-item logout-btn" v-if="isLogin" @click="handleLogout"
@@ -222,6 +222,17 @@ import FindMmr from './components/FindMmr.vue';
 import PublicReports from './components/PublicReports.vue';
 import ClanInfo from './components/ClanInfo.vue';
 import { getStoredUser, clearUser } from './api/api.js';
+import terranImgH from './assets/icons/terran.png';
+import zergImgH from './assets/icons/zerg.png';
+import protossImgH from './assets/icons/protoss.png';
+import randomImgH from './assets/icons/random.png';
+import defaultAvatarH from './assets/pics/profile-image.png';
+
+const AVATAR_PRESETS_H = { 'preset:T': terranImgH, 'preset:Z': zergImgH, 'preset:P': protossImgH, 'preset:R': randomImgH };
+function getUserAvatarStyle(av) {
+    const url = AVATAR_PRESETS_H[av] || (av && !av.startsWith('preset:') ? av : defaultAvatarH);
+    return { backgroundImage: `url('${url}')` };
+}
 
 const router = useRouter();
 const route = useRoute();
@@ -523,8 +534,8 @@ function handleLogout() {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-image: url('./assets/commanders/raynor.webp');
     background-size: cover;
+    background-position: center;
     border: 2px solid var(--sc2-accent);
     flex-shrink: 0;
 }

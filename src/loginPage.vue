@@ -114,6 +114,27 @@ function userLogin() {
 
 /* Hide the textual cover titles on small screens (mobile) per UI spec */
 @media (max-width: 640px) {
+    .sc2-auth-container {
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        flex-direction: column;
+    }
+
+    .auth-cover {
+        display: none;
+    }
+
+    .auth-form-area {
+        flex: 1;
+        width: 100%;
+        padding: 24px;
+        box-sizing: border-box;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
     .cover-title,
     .cover-subtitle {
         display: none;

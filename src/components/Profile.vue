@@ -5,7 +5,7 @@
             <div class="banner-bg"></div>
             <div class="banner-overlay"></div>
             <div class="profile-avatar-wrap">
-                <div class="profile-avatar"></div>
+                <div class="profile-avatar" :style="avatarStyle"></div>
                 <div class="avatar-ring"></div>
             </div>
         </div>
@@ -93,13 +93,28 @@
 </template>
 
 <script setup>
-defineProps({ user: Object });
+import { computed } from 'vue';
+import terranImg from '../assets/icons/terran.png';
+import zergImg from '../assets/icons/zerg.png';
+import protossImg from '../assets/icons/protoss.png';
+import randomImg from '../assets/icons/random.png';
+import defaultImg from '../assets/pics/profile-image.png';
+
+const props = defineProps({ user: Object });
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
 const emit = defineEmits(['jumpToProfileEditPage']);
 
 function jumpToProfileEditPage() {
     emit('jumpToProfileEditPage');
 }
+
+const PRESET_MAP = { 'preset:T': terranImg, 'preset:Z': zergImg, 'preset:P': protossImg, 'preset:R': randomImg };
+
+const avatarStyle = computed(() => {
+    const av = props.user?.avatar;
+    const url = PRESET_MAP[av] || (av && !av.startsWith('preset:') ? av : defaultImg);
+    return { backgroundImage: `url('${url}')` };
+});
 </script>
 
 <style scoped>
@@ -139,8 +154,8 @@ function jumpToProfileEditPage() {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background-image: url('../assets/pics/profile-image.png');
     background-size: cover;
+    background-position: center;
     border: 4px solid var(--sc2-bg-deep);
 }
 

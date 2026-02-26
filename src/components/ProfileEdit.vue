@@ -1,7 +1,7 @@
 <template>
     <div class="profile-edit">
         <div class="edit-avatar-section">
-            <div class="edit-avatar" @click="selectProfilePicture">
+            <div class="edit-avatar" :style="currentAvatarStyle" @click="openAvatarDialog">
                 <div class="avatar-mask">
                     <svg xmlns="http://www.w3.org/2000/svg" height="36px" viewBox="0 -960 960 960" width="36px"
                         fill="currentColor">
@@ -9,6 +9,44 @@
                             d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h405l-60 60H180v600h600v-348l60-60v408q0 24-18 42t-42 18H180Zm300-360ZM360-360v-170l382-382q9-9 20-13t22-4q11 0 22.32 4.5Q817.63-920 827-911l83 84q8.61 8.96 13.3 19.78 4.7 10.83 4.7 22.02 0 11.2-4.5 22.7T910-742L530-360H360Z" />
                     </svg>
                 </div>
+            </div>
+            <small class="avatar-hint">点击头像修改</small>
+        </div>
+
+        <!-- Avatar picker dialog -->
+        <div class="avatar-dialog-overlay" v-if="showAvatarDialog" @click.self="closeAvatarDialog">
+            <div class="avatar-dialog">
+                <h3 class="avatar-dialog-title">更换头像</h3>
+                <div class="avatar-tabs">
+                    <button :class="['atab', avatarTab === 'preset' ? 'atab-active' : '']" @click="avatarTab = 'preset'">预设头像</button>
+                    <button :class="['atab', avatarTab === 'upload' ? 'atab-active' : '']" @click="avatarTab = 'upload'">自定义上传</button>
+                </div>
+
+                <!-- Preset tab -->
+                <div v-if="avatarTab === 'preset'" class="preset-grid">
+                    <div v-for="p in presetOptions" :key="p.key"
+                        class="preset-item"
+                        :class="{ 'preset-selected': localAvatar === p.key }"
+                        @click="applyPreset(p.key)">
+                        <div class="preset-thumb" :style="{ backgroundImage: `url('${p.img}')` }"></div>
+                        <span class="preset-name">{{ p.label }}</span>
+                    </div>
+                </div>
+
+                <!-- Upload tab -->
+                <div v-if="avatarTab === 'upload'" class="upload-tab">
+                    <div class="upload-preview" :style="uploadPreviewStyle"></div>
+                    <label class="upload-label">
+                        <input type="file" accept="image/*" @change="onFileChange" class="file-input-hidden" />
+                        选择图片（≤ 2MB）
+                    </label>
+                    <span v-if="avatarUploadError" class="error-msg">{{ avatarUploadError }}</span>
+                    <button class="sc2-btn-primary" :disabled="!uploadFile || avatarUploading" @click="submitUploadAvatar">
+                        {{ avatarUploading ? '上传中...' : '确认上传' }}
+                    </button>
+                </div>
+
+                <button class="close-dialog-btn" @click="closeAvatarDialog">✕ 关闭</button>
             </div>
         </div>
 
@@ -100,10 +138,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import wSubmitButton from './widgets/wSubmitButton.vue';
-import { updateProfile, saveUser } from '../api/api.js';
+import { updateProfile, saveUser, uploadAvatar, setPresetAvatar } from '../api/api.js';
 import '../css/widgets.css';
+import terranImg from '../assets/icons/terran.png';
+import zergImg from '../assets/icons/zerg.png';
+import protossImg from '../assets/icons/protoss.png';
+import randomImg from '../assets/icons/random.png';
+import defaultImg from '../assets/pics/profile-image.png';
+
+const PRESET_MAP = { 'preset:T': terranImg, 'preset:Z': zergImg, 'preset:P': protossImg, 'preset:R': randomImg };
+
+const presetOptions = [
+    { key: 'preset:T', label: '人族', img: terranImg },
+    { key: 'preset:Z', label: '异虫', img: zergImg },
+    { key: 'preset:P', label: '星灵', img: protossImg },
+    { key: 'preset:R', label: '随机', img: randomImg },
+];
 
 const props = defineProps({ user: Object });
 const emit = defineEmits(['profileUpdated']);
@@ -131,6 +183,26 @@ const form = ref({
 const errorMsg = ref('');
 const successMsg = ref('');
 
+// -- Avatar state --
+const localAvatar = ref(null);
+const showAvatarDialog = ref(false);
+const avatarTab = ref('preset');
+const uploadFile = ref(null);
+const uploadPreviewUrl = ref(null);
+const avatarUploadError = ref('');
+const avatarUploading = ref(false);
+
+const currentAvatarStyle = computed(() => {
+    const av = localAvatar.value;
+    const url = PRESET_MAP[av] || (av && !av.startsWith('preset:') ? av : defaultImg);
+    return { backgroundImage: `url('${url}')` };
+});
+
+const uploadPreviewStyle = computed(() => {
+    if (uploadPreviewUrl.value) return { backgroundImage: `url('${uploadPreviewUrl.value}')` };
+    return { backgroundImage: `url('${defaultImg}')` };
+});
+
 const commanders = [
     { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
     { id: 4, name: '斯旺' }, { id: 5, name: '扎加拉' }, { id: 6, name: '沃拉尊' },
@@ -142,6 +214,7 @@ const commanders = [
 
 onMounted(() => {
     if (props.user) {
+        localAvatar.value = props.user.avatar || null;
         form.value = {
             battleTagCN: props.user.battleTagCN || '',
             battleTagUS: props.user.battleTagUS || '',
@@ -187,7 +260,67 @@ async function saveProfile() {
     }
 }
 
-function selectProfilePicture() { /* placeholder */ }
+function openAvatarDialog() {
+    avatarTab.value = 'preset';
+    uploadFile.value = null;
+    uploadPreviewUrl.value = null;
+    avatarUploadError.value = '';
+    showAvatarDialog.value = true;
+}
+
+function closeAvatarDialog() {
+    showAvatarDialog.value = false;
+}
+
+async function applyPreset(presetKey) {
+    if (!props.user?.id) return;
+    try {
+        const res = await setPresetAvatar(props.user.id, presetKey.replace('preset:', ''));
+        if (res.data.code === 200) {
+            localAvatar.value = presetKey;
+            const updatedUser = res.data.data || { ...props.user, avatar: presetKey };
+            saveUser({ ...props.user, avatar: presetKey });
+            emit('profileUpdated', { ...props.user, avatar: presetKey });
+            closeAvatarDialog();
+        } else {
+            alert(res.data.msg || '设置失败');
+        }
+    } catch (e) {
+        alert('网络错误');
+    }
+}
+
+function onFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { avatarUploadError.value = '请选择图片文件'; return; }
+    if (file.size > 2 * 1024 * 1024) { avatarUploadError.value = '图片不能超过 2MB'; return; }
+    avatarUploadError.value = '';
+    uploadFile.value = file;
+    uploadPreviewUrl.value = URL.createObjectURL(file);
+}
+
+async function submitUploadAvatar() {
+    if (!uploadFile.value || !props.user?.id) return;
+    avatarUploading.value = true;
+    avatarUploadError.value = '';
+    try {
+        const res = await uploadAvatar(props.user.id, uploadFile.value);
+        if (res.data.code === 200) {
+            const newAvatarUrl = res.data.data?.avatar || res.data.data;
+            localAvatar.value = newAvatarUrl;
+            saveUser({ ...props.user, avatar: newAvatarUrl });
+            emit('profileUpdated', { ...props.user, avatar: newAvatarUrl });
+            closeAvatarDialog();
+        } else {
+            avatarUploadError.value = res.data.msg || '上传失败';
+        }
+    } catch (e) {
+        avatarUploadError.value = '上传失败，请稍后重试';
+    } finally {
+        avatarUploading.value = false;
+    }
+}
 </script>
 
 <style scoped>
@@ -207,8 +340,8 @@ function selectProfilePicture() { /* placeholder */ }
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    background-image: url('../assets/pics/profile-image.png');
     background-size: cover;
+    background-position: center;
     cursor: pointer;
     position: relative;
     border: 3px solid var(--sc2-border);
@@ -371,4 +504,161 @@ function selectProfilePicture() { /* placeholder */ }
     cursor: not-allowed;
     border-style: dashed;
 }
+
+.avatar-hint {
+    display: block;
+    text-align: center;
+    color: var(--sc2-text-dim);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* ===== Avatar Dialog ===== */
+.avatar-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-dialog {
+    background: var(--sc2-bg-panel, #1a2035);
+    border: 1px solid var(--sc2-border, #2a3a5a);
+    border-radius: 12px;
+    padding: 28px;
+    width: 360px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.avatar-dialog-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    color: var(--sc2-text-bright);
+    text-align: center;
+    margin: 0;
+}
+
+.avatar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--sc2-border);
+    gap: 4px;
+}
+
+.atab {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--sc2-text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.atab:hover { color: var(--sc2-text-bright); }
+.atab-active {
+    color: var(--sc2-accent);
+    border-bottom-color: var(--sc2-accent);
+}
+
+.preset-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.preset-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px 4px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.preset-item:hover { border-color: var(--sc2-accent); }
+.preset-selected { border-color: var(--sc2-accent) !important; background: rgba(0, 180, 216, 0.1); }
+
+.preset-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--sc2-border);
+}
+
+.preset-name {
+    font-size: 12px;
+    color: var(--sc2-text-dim);
+}
+
+.upload-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.upload-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 3px solid var(--sc2-border);
+}
+
+.upload-label {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--sc2-bg-dark);
+    border: 1px solid var(--sc2-border);
+    border-radius: 6px;
+    color: var(--sc2-text);
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+.upload-label:hover { border-color: var(--sc2-accent); }
+
+.file-input-hidden {
+    display: none;
+}
+
+.sc2-btn-primary {
+    padding: 8px 20px;
+    background: var(--sc2-accent);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: opacity 0.2s;
+}
+.sc2-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.sc2-btn-primary:hover:not(:disabled) { opacity: 0.85; }
+
+.close-dialog-btn {
+    align-self: center;
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid var(--sc2-border);
+    border-radius: 6px;
+    color: var(--sc2-text-dim);
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+.close-dialog-btn:hover { border-color: var(--sc2-text); color: var(--sc2-text); }
 </style>

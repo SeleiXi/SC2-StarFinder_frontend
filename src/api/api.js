@@ -70,6 +70,18 @@ export function updateProfile(userId, data) {
     return api.put(`/user/${userId}/profile`, data);
 }
 
+export function uploadAvatar(userId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/user/${userId}/avatar`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+}
+
+export function setPresetAvatar(userId, preset) {
+    return api.put(`/user/${userId}/avatar/preset`, null, { params: { preset } });
+}
+
 export function findMatches(mmr, range, race, mode, minLevel) {
     const params = { mmr, range };
     if (race) params.race = race;
@@ -273,6 +285,54 @@ export function adminCreateTutorial(data, adminId) {
 
 export function adminDeleteTutorial(id, adminId) {
     return api.delete(`/admin/tutorials/${id}`, { params: { adminId } });
+}
+
+// --- Streams ---
+export function adminListStreams(adminId) {
+    return api.get('/admin/streams', { params: { adminId } });
+}
+export function adminDeleteStream(id, adminId) {
+    return api.delete(`/admin/streams/${id}`, { params: { adminId } });
+}
+
+// --- Clan Recruitments ---
+export function adminListClanRecruitments(adminId) {
+    return api.get('/admin/clan-recruitments', { params: { adminId } });
+}
+export function adminDeleteClanRecruitment(id, adminId) {
+    return api.delete(`/admin/clan-recruitments/${id}`, { params: { adminId } });
+}
+
+// --- Coaching Posts ---
+export function adminListCoachingPosts(adminId) {
+    return api.get('/admin/coaching-posts', { params: { adminId } });
+}
+export function adminDeleteCoachingPost(id, adminId) {
+    return api.delete(`/admin/coaching-posts/${id}`, { params: { adminId } });
+}
+
+// --- Public Reports ---
+export function adminListPublicReports(adminId) {
+    return api.get('/admin/public-reports', { params: { adminId } });
+}
+export function adminDeletePublicReport(id, adminId) {
+    return api.delete(`/admin/public-reports/${id}`, { params: { adminId } });
+}
+
+// --- Text Tutorials ---
+export function adminListTextTutorials(adminId) {
+    return api.get('/admin/text-tutorials', { params: { adminId } });
+}
+export function adminDeleteTextTutorial(id, adminId) {
+    return api.delete(`/admin/text-tutorials/${id}`, { params: { adminId } });
+}
+
+// --- Replays ---
+export function adminListReplays(adminId) {
+    return api.get('/admin/replays', { params: { adminId } });
+}
+export function adminDeleteReplay(id, adminId) {
+    return api.delete(`/admin/replays/${id}`, { params: { adminId } });
 }
 
 // ============ Auth helpers ============
