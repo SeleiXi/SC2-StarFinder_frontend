@@ -42,7 +42,7 @@
                     <span class="info-value">{{ user?.battleTagKR || '-' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">QQ/联系方式</span>
+                    <span class="info-label">QQ</span>
                     <span class="info-value">{{ user?.qq || '未设置' }}</span>
                 </div>
                 <div class="info-item">
@@ -52,7 +52,7 @@
             </div>
 
             <div class="mmr-display-section" v-if="user?.mmr || user?.mmrTerran || user?.mmrZerg || user?.mmrProtoss || user?.mmrRandom || user?.mmr2v2 || user?.mmr3v3 || user?.mmr4v4">
-                <h3>MMR 详情 (每日自动同步一次，同步不适用于国服)</h3>
+                <h3>MMR 详情 (自动同步)</h3>
                 <div class="mmr-grid">
                     <div class="mmr-box" v-if="user?.mmr">
                         <div class="mmr-label">1v1 (主)</div>
@@ -139,7 +139,7 @@ function jumpToProfileEditPage() {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background-image: url('../assets/commanders/raynor.webp');
+    background-image: url('../assets/pics/profile-image.png');
     background-size: cover;
     border: 4px solid var(--sc2-bg-deep);
 }

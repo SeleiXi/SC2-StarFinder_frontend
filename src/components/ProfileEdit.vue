@@ -35,12 +35,10 @@
                             {{ cmd.name }}
                         </option>
                     </select>
-                    <label style="margin-top:12px;">合作模式等级 <span class="hint-text">(选填)</span></label>
-                    <input type="number" class="wInput" v-model="form.coopLevel" placeholder="手动填写等级（不设上限）" min="0" step="1">
                 </div>
 
                 <div class="form-section">
-                    <label>战网 ID (只需要填写你想要被搜索到的那个服务器即可)</label>
+                    <label>多地区战网 ID (必填一项以同步 MMR)</label>
                     <div class="tag-input-group">
                         <input type="text" placeholder="国服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagCN">
                         <input type="text" placeholder="美服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagUS">
@@ -52,12 +50,16 @@
                 <div class="form-section">
                     <label>个人展示</label>
                     <input type="text" placeholder="直播链接" class="wInput" v-model="form.streamUrl">
-                    <textarea placeholder="个人描述（可描述自己的战术风格、想要打的对抗等等，会在约战页面展示）" class="wInput textarea-input" v-model="form.signature" rows="4"></textarea>
+                    <textarea placeholder="个性签名" class="wInput textarea-input" v-model="form.signature"></textarea>
                 </div>
 
                 <div class="form-section">
                     <label>MMR 信息 (可手动调整或同步)</label>
                     <div class="mmr-edit-grid">
+                        <div class="mmr-item">
+                            <span class="mmr-label">1v1 MMR (主)</span>
+                            <input type="number" v-model.number="form.mmr" class="wInput mmr-input">
+                        </div>
                         <div class="mmr-item">
                             <span class="mmr-label">1v1 人族</span>
                             <input type="number" v-model.number="form.mmrTerran" class="wInput mmr-input">
@@ -92,13 +94,14 @@
             </form>
             <span v-if="errorMsg" class="error-msg">{{ errorMsg }}</span>
             <span v-if="successMsg" class="success-msg">{{ successMsg }}</span>
-            <span v-if="savingMsg" class="saving-msg">{{ savingMsg }}</span>
+            <wSubmitButton text="保存修改" @click="saveProfile"></wSubmitButton>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
+import wSubmitButton from './widgets/wSubmitButton.vue';
 import { updateProfile, saveUser } from '../api/api.js';
 import '../css/widgets.css';
 
@@ -116,7 +119,6 @@ const form = ref({
     streamUrl: '',
     signature: '',
     commander: '',
-    coopLevel: '',
     mmr: 0,
     mmrTerran: 0,
     mmrZerg: 0,
@@ -128,9 +130,6 @@ const form = ref({
 });
 const errorMsg = ref('');
 const successMsg = ref('');
-const savingMsg = ref('');
-let debounceTimer = null;
-let isInitialLoad = true;
 
 const commanders = [
     { id: 1, name: '雷诺' }, { id: 2, name: '凯瑞甘' }, { id: 3, name: '阿塔尼斯' },
@@ -151,7 +150,6 @@ onMounted(() => {
             qq: props.user.qq || '',
             race: props.user.race || '',
             commander: props.user.commander || '',
-            coopLevel: props.user.coopLevel || '',
             region: props.user.region || '',
             streamUrl: props.user.streamUrl || '',
             signature: props.user.signature || '',
@@ -165,43 +163,7 @@ onMounted(() => {
             mmr4v4: props.user.mmr4v4 || 0
         };
     }
-    // Mark initial load complete after a short delay
-    setTimeout(() => { isInitialLoad = false; }, 100);
 });
-
-// Auto-save with debounce
-watch(form, () => {
-    if (isInitialLoad || !props.user?.id) return;
-    
-    savingMsg.value = '保存中...';
-    errorMsg.value = '';
-    successMsg.value = '';
-    
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-        await autoSaveProfile();
-    }, 600);
-}, { deep: true });
-
-async function autoSaveProfile() {
-    try {
-        const res = await updateProfile(props.user.id, form.value);
-        if (res.data.code === 200) {
-            const updatedUser = res.data.data;
-            saveUser(updatedUser);
-            savingMsg.value = '';
-            successMsg.value = '已保存';
-            // Note: No emit here to stay on edit page
-            setTimeout(() => { successMsg.value = ''; }, 2000);
-        } else {
-            savingMsg.value = '';
-            errorMsg.value = res.data.msg || '保存失败';
-        }
-    } catch (e) {
-        savingMsg.value = '';
-        errorMsg.value = '网络错误，请稍后再试';
-    }
-}
 
 async function saveProfile() {
     errorMsg.value = '';
@@ -245,7 +207,7 @@ function selectProfilePicture() { /* placeholder */ }
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    background-image: url('../assets/commanders/raynor.webp');
+    background-image: url('../assets/pics/profile-image.png');
     background-size: cover;
     cursor: pointer;
     position: relative;
@@ -286,13 +248,6 @@ function selectProfilePicture() { /* placeholder */ }
     margin-bottom: 10px;
     font-weight: bold;
     text-transform: uppercase;
-}
-
-.hint-text {
-    font-size: 12px;
-    color: var(--sc2-text-dim);
-    text-transform: none;
-    font-weight: normal;
 }
 
 .tag-input-group {
@@ -395,14 +350,6 @@ function selectProfilePicture() { /* placeholder */ }
     display: block;
     text-align: center;
     color: var(--sc2-success);
-    font-size: 13px;
-    margin-top: 10px;
-}
-
-.saving-msg {
-    display: block;
-    text-align: center;
-    color: var(--sc2-accent);
     font-size: 13px;
     margin-top: 10px;
 }
