@@ -167,8 +167,15 @@
 
         <!-- Main content -->
         <main class="sc2-main">
-            <!-- Mobile menu toggle (uses same double-arrow as desktop) -->
-            <button class="mobile-menu-btn" :class="{ rotated: !sidebarCollapsed }" @click="toggleSidebar">
+            <!-- Mobile menu toggle — right-pointing arrow when collapsed ("open"), hidden when sidebar open -->
+            <button class="mobile-menu-btn" v-show="sidebarCollapsed" @click="toggleSidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="currentColor">
+                    <path d="M383-480 200-664l56-56 240 240-240 240-56-56 183-184Zm264 0L464-664l56-56 240 240-240 240-56-56 183-184Z" />
+                </svg>
+            </button>
+            <!-- Mobile sidebar edge close handle — sticks to sidebar right edge -->
+            <button class="mobile-sidebar-handle" v-show="!sidebarCollapsed" @click="sidebarCollapsed = true">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
                     fill="currentColor">
                     <path d="M440-240 200-480l240-240 56 56-183 184 183 184-56 56Zm264 0L464-480l240-240 56 56-183 184 183 184-56 56Z" />
@@ -553,7 +560,7 @@ function handleLogout() {
     display: none;
     position: fixed;
     top: 50%;
-    left: 10px;
+    left: 8px;
     transform: translateY(-50%);
     z-index: 999;
     background: var(--sc2-bg-panel);
@@ -562,13 +569,28 @@ function handleLogout() {
     border-radius: 8px;
     padding: 8px;
     cursor: pointer;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.mobile-menu-btn svg {
-    transition: transform 0.3s;
+.mobile-sidebar-handle {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 250px;
+    transform: translateY(-50%);
+    z-index: 1001;
+    background: var(--sc2-bg-panel);
+    border: 1px solid var(--sc2-border);
+    border-left: none;
+    color: var(--sc2-accent);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 6px;
+    cursor: pointer;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.mobile-menu-btn.rotated svg {
-    transform: rotate(180deg);
+.mobile-sidebar-handle:hover {
+    background: var(--sc2-bg-hover);
+    color: var(--sc2-text-bright);
 }
 
 .mobile-overlay {
@@ -635,6 +657,12 @@ function handleLogout() {
     }
 
     .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-sidebar-handle {
         display: flex;
         align-items: center;
         justify-content: center;

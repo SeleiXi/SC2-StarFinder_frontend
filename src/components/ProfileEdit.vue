@@ -55,7 +55,7 @@
             <form class="edit-form" @submit.prevent="saveProfile">
                 <div class="form-section">
                     <label>基本信息</label>
-                    <input type="text" placeholder="QQ" class="wInput" v-model="form.qq">
+                    <input type="text" placeholder="QQ/联系方式" class="wInput" v-model="form.qq">
                     <select class="wInput select-input" v-model="form.race">
                         <option value="" disabled>选择主种族</option>
                         <option value="T">人族 (Terran)</option>

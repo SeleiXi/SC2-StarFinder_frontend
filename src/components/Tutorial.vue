@@ -33,36 +33,27 @@
                         {{ cat }}
                     </button>
                 </div>
-                <button v-if="isLoggedIn" class="add-btn" @click="showPublishDialog = true">+ 发布教程</button>
+                <button class="add-btn" @click="requireLogin(() => showPublishDialog = true)">+ 发布教程</button>
             </div>
 
-            <!-- Publish Dialog -->
-            <div v-if="showPublishDialog" class="dialog-overlay" @click.self="showPublishDialog = false">
-                <div class="dialog-box sc2-panel">
-                    <h3 class="dialog-title">发布教程视频</h3>
-                    <div class="dialog-form">
-                        <label>标题 *</label>
-                        <input v-model="publishForm.title" class="wInput" placeholder="请输入教程标题" />
-                        <label>视频链接 *</label>
-                        <input v-model="publishForm.url" class="wInput" placeholder="粘贴视频 URL" />
-                        <label>分类</label>
-                        <select v-model="publishForm.category" class="wInput wSelect">
-                            <option value="入门">入门</option>
-                            <option value="进阶">进阶</option>
-                            <option value="高级">高级</option>
-                        </select>
-                        <label>简介</label>
-                        <textarea v-model="publishForm.description" class="wInput" placeholder="这个视频讲了什么？" rows="3" style="resize:vertical"></textarea>
-                        <label>署名</label>
-                        <input v-model="publishForm.author" class="wInput" placeholder="会是你的 BattleTag，也可修改" />
-                    </div>
-                    <span v-if="publishError" class="error-msg">{{ publishError }}</span>
-                    <div class="dialog-actions">
-                        <button class="btn-submit" @click="submitTutorial" :disabled="publishing">
-                            {{ publishing ? '提交中...' : '确认发布' }}
-                        </button>
-                        <button class="btn-cancel" @click="showPublishDialog = false">取消</button>
-                    </div>
+            <!-- Publish Form (inline panel) -->
+            <div v-if="showPublishDialog" class="form-panel sc2-panel">
+                <h3>发布教程视频</h3>
+                <input v-model="publishForm.title" class="wInput" placeholder="标题 (必填)" />
+                <input v-model="publishForm.url" class="wInput" placeholder="视频链接 (必填)" />
+                <select v-model="publishForm.category" class="wInput wSelect">
+                    <option value="入门">入门</option>
+                    <option value="进阶">进阶</option>
+                    <option value="高级">高级</option>
+                </select>
+                <textarea v-model="publishForm.description" class="wInput textarea-input" placeholder="简介 (选填)" rows="3"></textarea>
+                <input v-model="publishForm.author" class="wInput" placeholder="署名 (默认 BattleTag)" />
+                <span v-if="publishError" class="error-msg">{{ publishError }}</span>
+                <div class="form-actions">
+                    <button class="btn-submit" @click="submitTutorial" :disabled="publishing">
+                        {{ publishing ? '提交中...' : '确认发布' }}
+                    </button>
+                    <button class="btn-cancel" @click="showPublishDialog = false">取消</button>
                 </div>
             </div>
 
@@ -851,53 +842,7 @@ onMounted(() => {
     font-size: 14px;
 }
 
-/* Publish Dialog */
-.dialog-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-    box-sizing: border-box;
-}
 
-.dialog-box {
-    width: 100%;
-    max-width: 520px;
-    padding: 32px;
-}
-
-.dialog-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 18px;
-    color: var(--sc2-accent);
-    margin-bottom: 20px;
-}
-
-.dialog-form {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
-}
-
-.dialog-form label {
-    font-size: 12px;
-    color: var(--sc2-text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 8px;
-}
-
-.dialog-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 8px;
-}
 
 @media (max-width: 768px) {
     .section-tabs { overflow-x: auto; }

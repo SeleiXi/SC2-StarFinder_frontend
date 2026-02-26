@@ -165,7 +165,7 @@
                         <th>{{ mode === 'coop' ? '常用指挥官' : '种族' }}</th>
                         <th v-if="mode === 'coop'">等级</th>
                         <th>个人描述</th>
-                        <th>QQ</th>
+                        <th>QQ/联系方式</th>
                     </tr>
                 </thead>
                 <tbody>
