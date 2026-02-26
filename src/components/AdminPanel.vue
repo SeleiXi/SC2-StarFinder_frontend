@@ -94,12 +94,13 @@
                             <td>
                                 <span class="status-badge" :class="c.status">{{ c.status }}</span>
                             </td>
-                            <td>{{ c.reporterId }}</td>
+                            <td>{{ c.reportedBy }}</td>
                             <td class="action-cell">
                                 <button v-if="c.status !== 'approved'" class="btn-success btn-sm"
                                     @click="approveCheater(c.id)">通过</button>
                                 <button v-if="c.status !== 'rejected'" class="btn-warn btn-sm"
                                     @click="rejectCheater(c.id)">拒绝</button>
+                                <button class="btn-info btn-sm" @click="openEdit('cheaters', c)">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteCheater(c.id)">删除</button>
                             </td>
                         </tr>
@@ -135,6 +136,7 @@
                                     @click="approveEvent(e.id)">通过</button>
                                 <button v-if="e.status !== 'rejected'" class="btn-warn btn-sm"
                                     @click="rejectEvent(e.id)">拒绝</button>
+                                <button class="btn-info btn-sm" @click="openEdit('events', e)">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteEvent(e.id)">删除</button>
                             </td>
                         </tr>
@@ -180,6 +182,7 @@
                             <td>{{ t.category }}</td>
                             <td>{{ t.author }}</td>
                             <td>
+                                <button class="btn-info btn-sm" @click="openEdit('tutorials', t)" style="margin-right:4px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteTutorial(t.id)">删除</button>
                             </td>
                         </tr>
@@ -193,14 +196,18 @@
         <div v-if="activeTab === 'streams'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>标题</th><th>主播</th><th>链接</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>名称</th><th>BattleTag</th><th>平台</th><th>链接</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="s in streams" :key="s.id">
                             <td>{{ s.id }}</td>
-                            <td>{{ s.title }}</td>
-                            <td>{{ s.streamer || s.userId }}</td>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.battleTag }}</td>
+                            <td>{{ s.platform }}</td>
                             <td><a :href="s.streamUrl" target="_blank" class="link-cell">查看</a></td>
-                            <td><button class="btn-danger btn-sm" @click="deleteStream(s.id)">删除</button></td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('streams', s)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deleteStream(s.id)">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -212,14 +219,18 @@
         <div v-if="activeTab === 'clans'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>战队名</th><th>描述</th><th>发布人</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>战队名</th><th>标签</th><th>MMR要求</th><th>作者</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="c in clanRecruitments" :key="c.id">
                             <td>{{ c.id }}</td>
                             <td>{{ c.clanName }}</td>
-                            <td class="desc-cell">{{ c.description }}</td>
-                            <td>{{ c.userId }}</td>
-                            <td><button class="btn-danger btn-sm" @click="deleteClan(c.id)">删除</button></td>
+                            <td>{{ c.clanTag }}</td>
+                            <td>{{ c.minMmr }}~{{ c.maxMmr }}</td>
+                            <td>{{ c.authorTag || c.userId }}</td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('clans', c)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deleteClan(c.id)">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -231,14 +242,19 @@
         <div v-if="activeTab === 'coaching'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>标题</th><th>教练</th><th>价格</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>标题</th><th>类型</th><th>种族</th><th>价格</th><th>作者</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="cp in coachingPosts" :key="cp.id">
                             <td>{{ cp.id }}</td>
                             <td>{{ cp.title }}</td>
-                            <td>{{ cp.coachId }}</td>
-                            <td>{{ cp.price }}</td>
-                            <td><button class="btn-danger btn-sm" @click="deleteCoaching(cp.id)">删除</button></td>
+                            <td>{{ cp.postType }}</td>
+                            <td>{{ cp.race }}</td>
+                            <td>{{ cp.priceInfo }}</td>
+                            <td>{{ cp.authorTag || cp.userId }}</td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('coaching', cp)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deleteCoaching(cp.id)">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -250,14 +266,18 @@
         <div v-if="activeTab === 'public-reports'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>标题</th><th>内容</th><th>发布人</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>游戏ID</th><th>MMR范围</th><th>描述</th><th>举报人</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="r in publicReports" :key="r.id">
                             <td>{{ r.id }}</td>
-                            <td>{{ r.title }}</td>
-                            <td class="desc-cell">{{ r.content }}</td>
-                            <td>{{ r.userId }}</td>
-                            <td><button class="btn-danger btn-sm" @click="deletePublicReport(r.id)">删除</button></td>
+                            <td>{{ r.gameId }}</td>
+                            <td>{{ r.mmrMin }}~{{ r.mmrMax }}</td>
+                            <td class="desc-cell">{{ r.description }}</td>
+                            <td>{{ r.reportedById }}</td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('public-reports', r)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deletePublicReport(r.id)">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -274,9 +294,12 @@
                         <tr v-for="tt in textTutorials" :key="tt.id">
                             <td>{{ tt.id }}</td>
                             <td>{{ tt.title }}</td>
-                            <td>{{ tt.author }}</td>
+                            <td>{{ tt.authorTag }}</td>
                             <td>{{ tt.category }}</td>
-                            <td><button class="btn-danger btn-sm" @click="deleteTextTutorial(tt.id)">删除</button></td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('text-tutorials', tt)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deleteTextTutorial(tt.id)">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -288,18 +311,184 @@
         <div v-if="activeTab === 'replays'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>文件名</th><th>上传人</th><th>大小</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>标题</th><th>文件名</th><th>分类</th><th>大小</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="rp in replays" :key="rp.id">
                             <td>{{ rp.id }}</td>
+                            <td>{{ rp.title }}</td>
                             <td>{{ rp.fileName }}</td>
-                            <td>{{ rp.userId }}</td>
+                            <td>{{ rp.category }}</td>
                             <td>{{ rp.fileSize ? (rp.fileSize / 1024).toFixed(1) + 'KB' : '-' }}</td>
-                            <td><button class="btn-danger btn-sm" @click="deleteReplay(rp.id)">删除</button></td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('replays', rp)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deleteReplay(rp.id)">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
                 <p v-if="replays.length === 0" class="empty-msg">暂无录像</p>
+            </div>
+        </div>
+
+        <!-- ===== Universal Edit Modal ===== -->
+        <div class="edit-overlay" v-if="editModalVisible" @click.self="closeEditModal">
+            <div class="edit-modal">
+                <h3 class="modal-title">编辑记录 #{{ editModalForm.id }}</h3>
+
+                <!-- Cheater fields -->
+                <template v-if="editModalTab === 'cheaters'">
+                    <label class="modal-label">BattleTag</label>
+                    <input v-model="editModalForm.battleTag" class="wInput" />
+                    <label class="modal-label">外挂类型</label>
+                    <input v-model="editModalForm.cheatType" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="3"></textarea>
+                    <label class="modal-label">状态</label>
+                    <select v-model="editModalForm.status" class="wInput">
+                        <option value="pending">待审核</option>
+                        <option value="approved">已通过</option>
+                        <option value="rejected">已拒绝</option>
+                    </select>
+                    <label class="modal-label">MMR</label>
+                    <input v-model.number="editModalForm.mmr" type="number" class="wInput" />
+                    <label class="modal-label">种族</label>
+                    <input v-model="editModalForm.race" class="wInput" />
+                </template>
+
+                <!-- Event fields -->
+                <template v-if="editModalTab === 'events'">
+                    <label class="modal-label">标题</label>
+                    <input v-model="editModalForm.title" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="2"></textarea>
+                    <label class="modal-label">规则</label>
+                    <textarea v-model="editModalForm.rules" class="wInput" rows="2"></textarea>
+                    <label class="modal-label">奖励</label>
+                    <input v-model="editModalForm.rewards" class="wInput" />
+                    <label class="modal-label">联系链接</label>
+                    <input v-model="editModalForm.contactLink" class="wInput" />
+                    <label class="modal-label">群组链接</label>
+                    <input v-model="editModalForm.groupLink" class="wInput" />
+                    <label class="modal-label">状态</label>
+                    <select v-model="editModalForm.status" class="wInput">
+                        <option value="pending">待审核</option>
+                        <option value="approved">已通过</option>
+                        <option value="rejected">已拒绝</option>
+                    </select>
+                    <label class="modal-label">地区</label>
+                    <input v-model="editModalForm.region" class="wInput" />
+                    <label class="modal-label">开始时间</label>
+                    <input v-model="editModalForm.startTime" class="wInput" />
+                </template>
+
+                <!-- Tutorial fields -->
+                <template v-if="editModalTab === 'tutorials'">
+                    <label class="modal-label">标题</label>
+                    <input v-model="editModalForm.title" class="wInput" />
+                    <label class="modal-label">视频链接</label>
+                    <input v-model="editModalForm.url" class="wInput" />
+                    <label class="modal-label">分类</label>
+                    <input v-model="editModalForm.category" class="wInput" />
+                    <label class="modal-label">简介</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="2"></textarea>
+                    <label class="modal-label">作者</label>
+                    <input v-model="editModalForm.author" class="wInput" />
+                </template>
+
+                <!-- Stream fields -->
+                <template v-if="editModalTab === 'streams'">
+                    <label class="modal-label">名称</label>
+                    <input v-model="editModalForm.name" class="wInput" />
+                    <label class="modal-label">直播链接</label>
+                    <input v-model="editModalForm.streamUrl" class="wInput" />
+                    <label class="modal-label">平台</label>
+                    <input v-model="editModalForm.platform" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="2"></textarea>
+                    <label class="modal-label">MMR</label>
+                    <input v-model.number="editModalForm.mmr" type="number" class="wInput" />
+                    <label class="modal-label">种族</label>
+                    <input v-model="editModalForm.race" class="wInput" />
+                </template>
+
+                <!-- Clan Recruitment fields -->
+                <template v-if="editModalTab === 'clans'">
+                    <label class="modal-label">战队名</label>
+                    <input v-model="editModalForm.clanName" class="wInput" />
+                    <label class="modal-label">战队标签</label>
+                    <input v-model="editModalForm.clanTag" class="wInput" />
+                    <label class="modal-label">地区</label>
+                    <input v-model="editModalForm.region" class="wInput" />
+                    <label class="modal-label">最低 MMR</label>
+                    <input v-model.number="editModalForm.minMmr" type="number" class="wInput" />
+                    <label class="modal-label">最高 MMR</label>
+                    <input v-model.number="editModalForm.maxMmr" type="number" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="2"></textarea>
+                    <label class="modal-label">联系方式</label>
+                    <input v-model="editModalForm.contact" class="wInput" />
+                </template>
+
+                <!-- Coaching Post fields -->
+                <template v-if="editModalTab === 'coaching'">
+                    <label class="modal-label">标题</label>
+                    <input v-model="editModalForm.title" class="wInput" />
+                    <label class="modal-label">类型</label>
+                    <select v-model="editModalForm.postType" class="wInput">
+                        <option value="coach">寻求教练</option>
+                        <option value="student">寻求学员</option>
+                    </select>
+                    <label class="modal-label">种族</label>
+                    <input v-model="editModalForm.race" class="wInput" />
+                    <label class="modal-label">MMR</label>
+                    <input v-model.number="editModalForm.mmr" type="number" class="wInput" />
+                    <label class="modal-label">价格/报酬说明</label>
+                    <input v-model="editModalForm.priceInfo" class="wInput" />
+                    <label class="modal-label">联系方式</label>
+                    <input v-model="editModalForm.contact" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="2"></textarea>
+                </template>
+
+                <!-- Public Report fields -->
+                <template v-if="editModalTab === 'public-reports'">
+                    <label class="modal-label">游戏 ID</label>
+                    <input v-model="editModalForm.gameId" class="wInput" />
+                    <label class="modal-label">最低 MMR</label>
+                    <input v-model.number="editModalForm.mmrMin" type="number" class="wInput" />
+                    <label class="modal-label">最高 MMR</label>
+                    <input v-model.number="editModalForm.mmrMax" type="number" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="3"></textarea>
+                </template>
+
+                <!-- Text Tutorial fields -->
+                <template v-if="editModalTab === 'text-tutorials'">
+                    <label class="modal-label">标题</label>
+                    <input v-model="editModalForm.title" class="wInput" />
+                    <label class="modal-label">分类</label>
+                    <input v-model="editModalForm.category" class="wInput" />
+                    <label class="modal-label">作者 Tag</label>
+                    <input v-model="editModalForm.authorTag" class="wInput" />
+                    <label class="modal-label">内容</label>
+                    <textarea v-model="editModalForm.content" class="wInput" rows="6"></textarea>
+                </template>
+
+                <!-- Replay fields -->
+                <template v-if="editModalTab === 'replays'">
+                    <label class="modal-label">标题</label>
+                    <input v-model="editModalForm.title" class="wInput" />
+                    <label class="modal-label">分类</label>
+                    <input v-model="editModalForm.category" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="3"></textarea>
+                </template>
+
+                <p v-if="editError" class="err-text">{{ editError }}</p>
+                <div class="form-actions">
+                    <button class="btn-success" @click="saveEditModal" :disabled="editSaving">{{ editSaving ? '保存中...' : '保存修改' }}</button>
+                    <button class="btn-cancel" @click="closeEditModal">取消</button>
+                </div>
             </div>
         </div>
     </div>
@@ -309,15 +498,15 @@
 import { ref, reactive, onMounted, watch } from 'vue';
 import {
     adminListUsers, adminDeleteUser, adminSetRole, adminUpdateUser,
-    adminListCheaters, adminApproveCheater, adminRejectCheater, adminDeleteCheater,
-    adminListEvents, adminApproveEvent, adminRejectEvent, adminDeleteEvent,
-    adminListTutorials, adminCreateTutorial, adminDeleteTutorial,
-    adminListStreams, adminDeleteStream,
-    adminListClanRecruitments, adminDeleteClanRecruitment,
-    adminListCoachingPosts, adminDeleteCoachingPost,
-    adminListPublicReports, adminDeletePublicReport,
-    adminListTextTutorials, adminDeleteTextTutorial,
-    adminListReplays, adminDeleteReplay
+    adminListCheaters, adminApproveCheater, adminRejectCheater, adminDeleteCheater, adminUpdateCheater,
+    adminListEvents, adminApproveEvent, adminRejectEvent, adminDeleteEvent, adminUpdateEvent,
+    adminListTutorials, adminCreateTutorial, adminDeleteTutorial, adminUpdateTutorial,
+    adminListStreams, adminDeleteStream, adminUpdateStream,
+    adminListClanRecruitments, adminDeleteClanRecruitment, adminUpdateClanRecruitment,
+    adminListCoachingPosts, adminDeleteCoachingPost, adminUpdateCoachingPost,
+    adminListPublicReports, adminDeletePublicReport, adminUpdatePublicReport,
+    adminListTextTutorials, adminDeleteTextTutorial, adminUpdateTextTutorial,
+    adminListReplays, adminDeleteReplay, adminUpdateReplay
 } from '../api/api.js';
 
 const props = defineProps({ user: Object });
@@ -351,6 +540,58 @@ const tForm = reactive({ title: '', url: '', category: '', description: '', auth
 
 const editingUser = ref(null);
 const editForm = reactive({ email: '', battleTag: '', password: '', mmr: 0, region: 'US' });
+
+// ===== Universal Edit Modal =====
+const editModalVisible = ref(false);
+const editModalTab = ref('');
+const editModalForm = reactive({});
+const editSaving = ref(false);
+const editError = ref('');
+
+function openEdit(tab, item) {
+    editModalTab.value = tab;
+    Object.keys(editModalForm).forEach(k => delete editModalForm[k]);
+    Object.assign(editModalForm, JSON.parse(JSON.stringify(item)));
+    editError.value = '';
+    editModalVisible.value = true;
+}
+
+function closeEditModal() {
+    editModalVisible.value = false;
+}
+
+async function saveEditModal() {
+    editSaving.value = true;
+    editError.value = '';
+    const id = editModalForm.id;
+    const aId = adminId();
+    try {
+        const MAP = {
+            cheaters: adminUpdateCheater,
+            events: adminUpdateEvent,
+            tutorials: adminUpdateTutorial,
+            streams: adminUpdateStream,
+            clans: adminUpdateClanRecruitment,
+            coaching: adminUpdateCoachingPost,
+            'public-reports': adminUpdatePublicReport,
+            'text-tutorials': adminUpdateTextTutorial,
+            replays: adminUpdateReplay
+        };
+        const fn = MAP[editModalTab.value];
+        if (!fn) { editError.value = '未知类型'; return; }
+        const res = await fn(id, editModalForm, aId);
+        if (res.data?.code === 200) {
+            closeEditModal();
+            loadTab();
+        } else {
+            editError.value = res.data?.msg || '保存失败';
+        }
+    } catch (e) {
+        editError.value = e.response?.data?.msg || '保存失败';
+    } finally {
+        editSaving.value = false;
+    }
+}
 
 function startEditUser(user) {
     editingUser.value = user;
@@ -691,6 +932,65 @@ onMounted(loadTab);
     padding: 6px 16px;
     border-radius: 6px;
     cursor: pointer;
+}
+
+.btn-info {
+    background: rgba(0, 120, 200, .2);
+    color: #60b8ff;
+    border: 1px solid rgba(0, 120, 200, .4);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.btn-info:hover { background: rgba(0, 120, 200, .35); }
+
+/* ===== Edit Modal ===== */
+.edit-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.edit-modal {
+    background: var(--sc2-bg-panel, #1a2035);
+    border: 1px solid var(--sc2-border, #2a3a5a);
+    border-radius: 12px;
+    padding: 28px;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    color: var(--sc2-text-bright);
+    margin: 0 0 12px;
+    text-align: center;
+}
+
+.modal-label {
+    font-size: 12px;
+    color: var(--sc2-accent);
+    margin-top: 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.err-text {
+    color: var(--sc2-danger, #ff4d4d);
+    font-size: 13px;
+    margin-top: 6px;
 }
 
 .add-form {

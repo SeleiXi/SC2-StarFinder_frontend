@@ -80,7 +80,7 @@
         <!-- Opponent Race / Commander -->
         <div class="sc2-panel race-panel" style="margin-top: 20px;">
             <div class="panel-header">
-                <span class="panel-title">{{ mode === 'coop' ? '匹配者建议指挥官 (选填)' : '匹配者种族' }}</span>
+                <span class="panel-title">{{ mode === 'coop' ? '指定队友指挥官 (选填)' : '匹配者种族' }}</span>
             </div>
             <div class="race-grid" v-if="mode !== 'coop'">
                 <div class="race-card small" :class="{ selected: opponentRace === 'T', terran: opponentRace === 'T' }"

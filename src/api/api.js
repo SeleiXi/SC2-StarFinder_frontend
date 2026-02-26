@@ -258,6 +258,9 @@ export function adminRejectCheater(id, adminId) {
 export function adminDeleteCheater(id, adminId) {
     return api.delete(`/admin/cheaters/${id}`, { params: { adminId } });
 }
+export function adminUpdateCheater(id, data, adminId) {
+    return api.put(`/admin/cheaters/${id}`, data, { params: { adminId } });
+}
 
 export function adminListEvents(adminId) {
     return api.get('/admin/events', { params: { adminId } });
@@ -274,6 +277,9 @@ export function adminRejectEvent(id, adminId) {
 export function adminDeleteEvent(id, adminId) {
     return api.delete(`/admin/events/${id}`, { params: { adminId } });
 }
+export function adminUpdateEvent(id, data, adminId) {
+    return api.put(`/admin/events/${id}`, data, { params: { adminId } });
+}
 
 export function adminListTutorials(adminId) {
     return api.get('/admin/tutorials', { params: { adminId } });
@@ -286,6 +292,9 @@ export function adminCreateTutorial(data, adminId) {
 export function adminDeleteTutorial(id, adminId) {
     return api.delete(`/admin/tutorials/${id}`, { params: { adminId } });
 }
+export function adminUpdateTutorial(id, data, adminId) {
+    return api.put(`/admin/tutorials/${id}`, data, { params: { adminId } });
+}
 
 // --- Streams ---
 export function adminListStreams(adminId) {
@@ -293,6 +302,9 @@ export function adminListStreams(adminId) {
 }
 export function adminDeleteStream(id, adminId) {
     return api.delete(`/admin/streams/${id}`, { params: { adminId } });
+}
+export function adminUpdateStream(id, data, adminId) {
+    return api.put(`/admin/streams/${id}`, data, { params: { adminId } });
 }
 
 // --- Clan Recruitments ---
@@ -302,6 +314,9 @@ export function adminListClanRecruitments(adminId) {
 export function adminDeleteClanRecruitment(id, adminId) {
     return api.delete(`/admin/clan-recruitments/${id}`, { params: { adminId } });
 }
+export function adminUpdateClanRecruitment(id, data, adminId) {
+    return api.put(`/admin/clan-recruitments/${id}`, data, { params: { adminId } });
+}
 
 // --- Coaching Posts ---
 export function adminListCoachingPosts(adminId) {
@@ -309,6 +324,9 @@ export function adminListCoachingPosts(adminId) {
 }
 export function adminDeleteCoachingPost(id, adminId) {
     return api.delete(`/admin/coaching-posts/${id}`, { params: { adminId } });
+}
+export function adminUpdateCoachingPost(id, data, adminId) {
+    return api.put(`/admin/coaching-posts/${id}`, data, { params: { adminId } });
 }
 
 // --- Public Reports ---
@@ -318,6 +336,9 @@ export function adminListPublicReports(adminId) {
 export function adminDeletePublicReport(id, adminId) {
     return api.delete(`/admin/public-reports/${id}`, { params: { adminId } });
 }
+export function adminUpdatePublicReport(id, data, adminId) {
+    return api.put(`/admin/public-reports/${id}`, data, { params: { adminId } });
+}
 
 // --- Text Tutorials ---
 export function adminListTextTutorials(adminId) {
@@ -326,6 +347,9 @@ export function adminListTextTutorials(adminId) {
 export function adminDeleteTextTutorial(id, adminId) {
     return api.delete(`/admin/text-tutorials/${id}`, { params: { adminId } });
 }
+export function adminUpdateTextTutorial(id, data, adminId) {
+    return api.put(`/admin/text-tutorials/${id}`, data, { params: { adminId } });
+}
 
 // --- Replays ---
 export function adminListReplays(adminId) {
@@ -333,6 +357,9 @@ export function adminListReplays(adminId) {
 }
 export function adminDeleteReplay(id, adminId) {
     return api.delete(`/admin/replays/${id}`, { params: { adminId } });
+}
+export function adminUpdateReplay(id, data, adminId) {
+    return api.put(`/admin/replays/${id}`, data, { params: { adminId } });
 }
 
 // ============ Auth helpers ============
