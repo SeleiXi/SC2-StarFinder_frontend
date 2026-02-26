@@ -50,7 +50,7 @@ async function userLogin() {
             errorMsg.value = res.data.msg || '登录失败';
         }
     } catch (e) {
-        errorMsg.value = '网络错误，请重试';
+        errorMsg.value = e.message || '网络错误，请重试';
     }
 }
 </script>

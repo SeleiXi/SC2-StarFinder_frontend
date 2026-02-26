@@ -49,11 +49,11 @@
                     </thead>
                     <tbody>
                         <tr v-for="u in users" :key="u.id">
-                            <td>{{ u.id }}</td>
-                            <td>{{ u.email }}</td>
-                            <td>{{ u.battleTag }}</td>
-                            <td>{{ u.mmr }}</td>
-                            <td>
+                            <td data-label="ID">{{ u.id }}</td>
+                            <td data-label="邮箱">{{ u.email }}</td>
+                            <td data-label="BattleTag">{{ u.battleTag }}</td>
+                            <td data-label="MMR">{{ u.mmr }}</td>
+                            <td data-label="角色">
                                 <select :value="u.role || 'user'" @change="changeRole(u, $event.target.value)"
                                     class="role-select" :disabled="u.id === props.user.id">
                                     <option value="user">user</option>
@@ -61,7 +61,7 @@
                                     <option v-if="props.user.role === 'super_admin'" value="super_admin">super_admin</option>
                                 </select>
                             </td>
-                            <td>
+                            <td data-label="操作">
                                 <button class="btn-warn btn-sm" @click="startEditUser(u)" style="margin-right:5px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteUser(u.id)">删除</button>
                             </td>
@@ -88,14 +88,14 @@
                     </thead>
                     <tbody>
                         <tr v-for="c in cheaters" :key="c.id">
-                            <td>{{ c.id }}</td>
-                            <td>{{ c.battleTag }}</td>
-                            <td>{{ c.cheatType }}</td>
-                            <td>
+                            <td data-label="ID">{{ c.id }}</td>
+                            <td data-label="BattleTag">{{ c.battleTag }}</td>
+                            <td data-label="外挂类型">{{ c.cheatType }}</td>
+                            <td data-label="状态">
                                 <span class="status-badge" :class="c.status">{{ c.status }}</span>
                             </td>
-                            <td>{{ c.reportedBy }}</td>
-                            <td class="action-cell">
+                            <td data-label="举报人">{{ c.reportedBy }}</td>
+                            <td data-label="操作" class="action-cell">
                                 <button v-if="c.status !== 'approved'" class="btn-success btn-sm"
                                     @click="approveCheater(c.id)">通过</button>
                                 <button v-if="c.status !== 'rejected'" class="btn-warn btn-sm"
@@ -125,13 +125,13 @@
                     </thead>
                     <tbody>
                         <tr v-for="e in events" :key="e.id">
-                            <td>{{ e.id }}</td>
-                            <td>{{ e.title }}</td>
-                            <td class="desc-cell">{{ e.description }}</td>
-                            <td>
+                            <td data-label="ID">{{ e.id }}</td>
+                            <td data-label="标题">{{ e.title }}</td>
+                            <td data-label="描述" class="desc-cell">{{ e.description }}</td>
+                            <td data-label="状态">
                                 <span class="status-badge" :class="e.status">{{ e.status }}</span>
                             </td>
-                            <td class="action-cell">
+                            <td data-label="操作" class="action-cell">
                                 <button v-if="e.status !== 'approved'" class="btn-success btn-sm"
                                     @click="approveEvent(e.id)">通过</button>
                                 <button v-if="e.status !== 'rejected'" class="btn-warn btn-sm"
@@ -177,11 +177,11 @@
                     </thead>
                     <tbody>
                         <tr v-for="t in tutorials" :key="t.id">
-                            <td>{{ t.id }}</td>
-                            <td>{{ t.title }}</td>
-                            <td>{{ t.category }}</td>
-                            <td>{{ t.author }}</td>
-                            <td>
+                            <td data-label="ID">{{ t.id }}</td>
+                            <td data-label="标题">{{ t.title }}</td>
+                            <td data-label="分类">{{ t.category }}</td>
+                            <td data-label="作者">{{ t.author }}</td>
+                            <td data-label="操作">
                                 <button class="btn-info btn-sm" @click="openEdit('tutorials', t)" style="margin-right:4px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteTutorial(t.id)">删除</button>
                             </td>
@@ -1047,6 +1047,45 @@ onMounted(loadTab);
     .admin-table th,
     .admin-table td {
         padding: 8px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-panel {
+        padding: 12px;
+    }
+
+    .admin-table-wrap {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .action-cell {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table, .admin-table tbody, .admin-table tr, .admin-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .admin-table td:before {
+        content: attr(data-label);
+        display: inline-block;
+        width: 120px;
+        font-weight: 700;
+        color: var(--sc2-text-dim);
+        margin-right: 8px;
     }
 }
 </style>
