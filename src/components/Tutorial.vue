@@ -297,7 +297,7 @@ async function submitTutorial() {
             showPublishDialog.value = false;
             publishForm.value = { title: '', url: '', category: '入门', description: '', author: currentUser?.nickname || currentUser?.email || '' };
             publishError.value = '';
-            alert('教程已提交，待管理员审核通过后将显示在列表中。');
+            alert('内容已经提交审核，通过后显示');
             await loadTutorials(currentCat.value);
         } else {
             publishError.value = res.data.msg || '发布失败';
@@ -335,7 +335,7 @@ async function submitCoaching() {
     try {
         const res = await createCoachingPost({ ...coachForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
-            coachMsg.value = '发布成功！待管理员审核通过后将显示在列表中。';
+            coachMsg.value = '内容已经提交审核，通过后显示';
             showCoachingForm.value = false;
             coachForm.value = { title: '', postType: 'coach', race: '', mmr: null, priceInfo: '', contact: '', description: '' };
             await loadCoaching(coachingTab.value);
@@ -381,7 +381,7 @@ async function submitTextTutorial() {
     try {
         const res = await createTextTutorial({ ...textForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
-            textMsg.value = '发布成功！待管理员审核通过后将显示在列表中。';
+            textMsg.value = '内容已经提交审核，通过后显示';
             showTextForm.value = false;
             textForm.value = { title: '', category: '', content: '' };
             await loadTextTutorials(textCat.value);
@@ -443,7 +443,7 @@ async function submitReplay() {
         fd.append('category', replayForm.value.category || '');
         const res = await api.post('/replay', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         if (res.data.code === 200) {
-            replayMsg.value = '上传成功！待管理员审核通过后将显示在列表中。';
+            replayMsg.value = '内容已经提交审核，通过后显示';
             showReplayForm.value = false;
             replayForm.value = { title: '', category: '', description: '', file: null };
             await loadReplays(replayCat.value);
