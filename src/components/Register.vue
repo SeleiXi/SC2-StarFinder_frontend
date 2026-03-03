@@ -15,7 +15,7 @@
             
 
             <div class="inline-row">
-                <input type="text" v-model="form.battleTag" class="wInput" placeholder="战网ID (选填，如 Amaris#31262)" style="flex: 2; margin-top: 0;">
+                <input type="text" v-model="form.nickname" class="wInput" placeholder="昵称 (必填)" required style="flex: 2; margin-top: 0;">
                 <select v-model="form.region" class="region-select" style="flex: 1.1; margin-top: 0;">
                     <option value="US">美服</option>
                     <option value="EU">欧服</option>
@@ -42,7 +42,7 @@ import { register, saveUser, sendEmailCode } from '../api/api.js';
 import '../css/widgets.css';
 
 const form = reactive({
-    battleTag: '', email: '', emailCode: '', qq: '', password: '', region: 'CN'
+    nickname: '', email: '', emailCode: '', qq: '', password: '', region: 'CN'
 });
 const errorMsg = ref('');
 const successMsg = ref('');
@@ -87,6 +87,10 @@ async function handleRegister() {
     successMsg.value = '';
     if (!form.email || !form.password || !form.emailCode) {
         errorMsg.value = '请完善注册信息';
+        return;
+    }
+    if (!form.nickname.trim()) {
+        errorMsg.value = '昵称不能为空';
         return;
     }
     

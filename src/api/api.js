@@ -166,6 +166,24 @@ export function createPublicReport(data) {
     return api.post('/public-report', data);
 }
 
+export function uploadReportImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/public-report/upload-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+}
+
+// ============ Feedback APIs ============
+
+export function createFeedback(data) {
+    return api.post('/feedback', data);
+}
+
+export function getMyFeedbacks() {
+    return api.get('/feedback/my');
+}
+
 // ============ Coaching APIs ============
 
 export function getCoachingPosts(type) {
@@ -360,6 +378,48 @@ export function adminDeleteReplay(id, adminId) {
 }
 export function adminUpdateReplay(id, data, adminId) {
     return api.put(`/admin/replays/${id}`, data, { params: { adminId } });
+}
+
+// --- Approval APIs ---
+export function adminApproveTutorial(id, adminId) {
+    return api.put(`/admin/tutorials/${id}/approve`, null, { params: { adminId } });
+}
+export function adminRejectTutorial(id, adminId) {
+    return api.put(`/admin/tutorials/${id}/reject`, null, { params: { adminId } });
+}
+export function adminApproveTextTutorial(id, adminId) {
+    return api.put(`/admin/text-tutorials/${id}/approve`, null, { params: { adminId } });
+}
+export function adminRejectTextTutorial(id, adminId) {
+    return api.put(`/admin/text-tutorials/${id}/reject`, null, { params: { adminId } });
+}
+export function adminApproveCoachingPost(id, adminId) {
+    return api.put(`/admin/coaching-posts/${id}/approve`, null, { params: { adminId } });
+}
+export function adminRejectCoachingPost(id, adminId) {
+    return api.put(`/admin/coaching-posts/${id}/reject`, null, { params: { adminId } });
+}
+export function adminApproveReplay(id, adminId) {
+    return api.put(`/admin/replays/${id}/approve`, null, { params: { adminId } });
+}
+export function adminRejectReplay(id, adminId) {
+    return api.put(`/admin/replays/${id}/reject`, null, { params: { adminId } });
+}
+
+// --- Feedback management ---
+export function adminListFeedbacks(adminId) {
+    return api.get('/admin/feedbacks', { params: { adminId } });
+}
+export function adminUpdateFeedback(id, data, adminId) {
+    return api.put(`/admin/feedbacks/${id}`, data, { params: { adminId } });
+}
+export function adminDeleteFeedback(id, adminId) {
+    return api.delete(`/admin/feedbacks/${id}`, { params: { adminId } });
+}
+
+// --- Pending counts ---
+export function adminGetPendingCounts(adminId) {
+    return api.get('/admin/pending-counts', { params: { adminId } });
 }
 
 // ============ Auth helpers ============

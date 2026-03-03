@@ -267,7 +267,7 @@ const publishForm = ref({
     url: '',
     category: '入门',
     description: '',
-    author: currentUser?.battleTag || currentUser?.email || ''
+    author: currentUser?.nickname || currentUser?.email || ''
 });
 
 async function loadVideoCategories() {
@@ -295,7 +295,9 @@ async function submitTutorial() {
         const res = await createTutorial({ ...publishForm.value });
         if (res.data.code === 200) {
             showPublishDialog.value = false;
-            publishForm.value = { title: '', url: '', category: '入门', description: '', author: currentUser?.battleTag || currentUser?.email || '' };
+            publishForm.value = { title: '', url: '', category: '入门', description: '', author: currentUser?.nickname || currentUser?.email || '' };
+            publishError.value = '';
+            alert('教程已提交，待管理员审核通过后将显示在列表中。');
             await loadTutorials(currentCat.value);
         } else {
             publishError.value = res.data.msg || '发布失败';
@@ -333,7 +335,7 @@ async function submitCoaching() {
     try {
         const res = await createCoachingPost({ ...coachForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
-            coachMsg.value = '发布成功！';
+            coachMsg.value = '发布成功！待管理员审核通过后将显示在列表中。';
             showCoachingForm.value = false;
             coachForm.value = { title: '', postType: 'coach', race: '', mmr: null, priceInfo: '', contact: '', description: '' };
             await loadCoaching(coachingTab.value);
@@ -379,7 +381,7 @@ async function submitTextTutorial() {
     try {
         const res = await createTextTutorial({ ...textForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
-            textMsg.value = '发布成功！';
+            textMsg.value = '发布成功！待管理员审核通过后将显示在列表中。';
             showTextForm.value = false;
             textForm.value = { title: '', category: '', content: '' };
             await loadTextTutorials(textCat.value);
@@ -441,7 +443,7 @@ async function submitReplay() {
         fd.append('category', replayForm.value.category || '');
         const res = await api.post('/replay', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         if (res.data.code === 200) {
-            replayMsg.value = '上传成功！';
+            replayMsg.value = '上传成功！待管理员审核通过后将显示在列表中。';
             showReplayForm.value = false;
             replayForm.value = { title: '', category: '', description: '', file: null };
             await loadReplays(replayCat.value);

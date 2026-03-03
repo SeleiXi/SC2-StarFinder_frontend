@@ -5,7 +5,10 @@
         <!-- Tabs -->
         <div class="admin-tabs">
             <button v-for="tab in tabs" :key="tab.key" class="tab-btn" :class="{ active: activeTab === tab.key }"
-                @click="activeTab = tab.key">{{ tab.label }}</button>
+                @click="activeTab = tab.key">
+                {{ tab.label }}
+                <span class="tab-badge" v-if="pendingCounts[tab.countKey] > 0">{{ pendingCounts[tab.countKey] }}</span>
+            </button>
         </div>
 
         <!-- ===== Users Tab ===== -->
@@ -17,7 +20,7 @@
                     <input v-model="editForm.email" placeholder="邮箱" class="wInput" style="flex:1" disabled />
                 </div>
                 <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <input v-model="editForm.battleTag" placeholder="BattleTag" class="wInput" style="flex:1" />
+                    <input v-model="editForm.nickname" placeholder="昵称" class="wInput" style="flex:1" />
                     <input v-model="editForm.password" placeholder="新密码 (留空则不修改)" class="wInput" style="flex:1" />
                 </div>
                 <div class="inline-row" style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -41,7 +44,7 @@
                         <tr>
                             <th>ID</th>
                             <th>邮箱</th>
-                            <th>BattleTag</th>
+                            <th>昵称</th>
                             <th>MMR</th>
                             <th>角色</th>
                             <th>操作</th>
@@ -51,7 +54,7 @@
                         <tr v-for="u in users" :key="u.id">
                             <td data-label="ID">{{ u.id }}</td>
                             <td data-label="邮箱">{{ u.email }}</td>
-                            <td data-label="BattleTag">{{ u.battleTag }}</td>
+                            <td data-label="昵称">{{ u.nickname }}</td>
                             <td data-label="MMR">{{ u.mmr }}</td>
                             <td data-label="角色">
                                 <select :value="u.role || 'user'" @change="changeRole(u, $event.target.value)"
@@ -172,6 +175,7 @@
                             <th>标题</th>
                             <th>分类</th>
                             <th>作者</th>
+                            <th>状态</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -181,7 +185,12 @@
                             <td data-label="标题">{{ t.title }}</td>
                             <td data-label="分类">{{ t.category }}</td>
                             <td data-label="作者">{{ t.author }}</td>
+                            <td data-label="状态">
+                                <span class="status-badge" :class="t.status">{{ t.status || 'approved' }}</span>
+                            </td>
                             <td data-label="操作">
+                                <button v-if="t.status === 'pending'" class="btn-success btn-sm" @click="approveTutorial(t.id)" style="margin-right:4px">通过</button>
+                                <button v-if="t.status === 'pending'" class="btn-warn btn-sm" @click="rejectTutorial(t.id)" style="margin-right:4px">拒绝</button>
                                 <button class="btn-info btn-sm" @click="openEdit('tutorials', t)" style="margin-right:4px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteTutorial(t.id)">删除</button>
                             </td>
@@ -242,7 +251,7 @@
         <div v-if="activeTab === 'coaching'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>标题</th><th>类型</th><th>种族</th><th>价格</th><th>作者</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>标题</th><th>类型</th><th>种族</th><th>价格</th><th>作者</th><th>状态</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="cp in coachingPosts" :key="cp.id">
                             <td>{{ cp.id }}</td>
@@ -251,7 +260,10 @@
                             <td>{{ cp.race }}</td>
                             <td>{{ cp.priceInfo }}</td>
                             <td>{{ cp.authorTag || cp.userId }}</td>
+                            <td><span class="status-badge" :class="cp.status">{{ cp.status || 'approved' }}</span></td>
                             <td class="action-cell">
+                                <button v-if="cp.status === 'pending'" class="btn-success btn-sm" @click="approveCoachingPost(cp.id)" style="margin-right:4px">通过</button>
+                                <button v-if="cp.status === 'pending'" class="btn-warn btn-sm" @click="rejectCoachingPost(cp.id)" style="margin-right:4px">拒绝</button>
                                 <button class="btn-info btn-sm" @click="openEdit('coaching', cp)" style="margin-right:4px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteCoaching(cp.id)">删除</button>
                             </td>
@@ -289,14 +301,17 @@
         <div v-if="activeTab === 'text-tutorials'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>标题</th><th>作者</th><th>分类</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>标题</th><th>作者</th><th>分类</th><th>状态</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="tt in textTutorials" :key="tt.id">
                             <td>{{ tt.id }}</td>
                             <td>{{ tt.title }}</td>
                             <td>{{ tt.authorTag }}</td>
                             <td>{{ tt.category }}</td>
+                            <td><span class="status-badge" :class="tt.status">{{ tt.status || 'approved' }}</span></td>
                             <td class="action-cell">
+                                <button v-if="tt.status === 'pending'" class="btn-success btn-sm" @click="approveTextTutorial(tt.id)" style="margin-right:4px">通过</button>
+                                <button v-if="tt.status === 'pending'" class="btn-warn btn-sm" @click="rejectTextTutorial(tt.id)" style="margin-right:4px">拒绝</button>
                                 <button class="btn-info btn-sm" @click="openEdit('text-tutorials', tt)" style="margin-right:4px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteTextTutorial(tt.id)">删除</button>
                             </td>
@@ -311,7 +326,7 @@
         <div v-if="activeTab === 'replays'" class="tab-content">
             <div class="admin-table-wrap">
                 <table class="admin-table">
-                    <thead><tr><th>ID</th><th>标题</th><th>文件名</th><th>分类</th><th>大小</th><th>操作</th></tr></thead>
+                    <thead><tr><th>ID</th><th>标题</th><th>文件名</th><th>分类</th><th>大小</th><th>状态</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="rp in replays" :key="rp.id">
                             <td>{{ rp.id }}</td>
@@ -319,7 +334,10 @@
                             <td>{{ rp.fileName }}</td>
                             <td>{{ rp.category }}</td>
                             <td>{{ rp.fileSize ? (rp.fileSize / 1024).toFixed(1) + 'KB' : '-' }}</td>
+                            <td><span class="status-badge" :class="rp.status">{{ rp.status || 'approved' }}</span></td>
                             <td class="action-cell">
+                                <button v-if="rp.status === 'pending'" class="btn-success btn-sm" @click="approveReplayItem(rp.id)" style="margin-right:4px">通过</button>
+                                <button v-if="rp.status === 'pending'" class="btn-warn btn-sm" @click="rejectReplayItem(rp.id)" style="margin-right:4px">拒绝</button>
                                 <button class="btn-info btn-sm" @click="openEdit('replays', rp)" style="margin-right:4px">编辑</button>
                                 <button class="btn-danger btn-sm" @click="deleteReplay(rp.id)">删除</button>
                             </td>
@@ -327,6 +345,51 @@
                     </tbody>
                 </table>
                 <p v-if="replays.length === 0" class="empty-msg">暂无录像</p>
+            </div>
+        </div>
+
+        <!-- ===== Feedbacks Tab ===== -->
+        <div v-if="activeTab === 'feedbacks'" class="tab-content">
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>用户</th><th>内容</th><th>状态</th><th>管理员回复</th><th>操作</th></tr></thead>
+                    <tbody>
+                        <tr v-for="fb in feedbacks" :key="fb.id">
+                            <td>{{ fb.id }}</td>
+                            <td>{{ fb.authorTag || fb.userId }}</td>
+                            <td class="desc-cell">{{ fb.content }}</td>
+                            <td><span class="status-badge" :class="fb.status">{{ fb.status }}</span></td>
+                            <td class="desc-cell">{{ fb.adminReply || '-' }}</td>
+                            <td class="action-cell">
+                                <button v-if="fb.status === 'pending'" class="btn-success btn-sm" @click="resolveFeedback(fb.id)" style="margin-right:4px">已解决</button>
+                                <button class="btn-info btn-sm" @click="openReplyModal(fb)" style="margin-right:4px">回复</button>
+                                <button class="btn-danger btn-sm" @click="deleteFeedbackItem(fb.id)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p v-if="feedbacks.length === 0" class="empty-msg">暂无反馈</p>
+            </div>
+
+            <!-- Reply Modal -->
+            <div class="edit-overlay" v-if="replyModalVisible" @click.self="replyModalVisible = false">
+                <div class="edit-modal">
+                    <h3 class="modal-title">回复反馈 #{{ replyTarget?.id }}</h3>
+                    <p style="color: var(--sc2-text-dim); font-size: 13px; margin-bottom: 12px;">原内容：{{ replyTarget?.content?.substring(0, 200) }}...</p>
+                    <label class="modal-label">状态</label>
+                    <select v-model="replyForm.status" class="wInput">
+                        <option value="pending">待处理</option>
+                        <option value="processing">处理中</option>
+                        <option value="resolved">已解决</option>
+                        <option value="rejected">已关闭</option>
+                    </select>
+                    <label class="modal-label">管理员回复</label>
+                    <textarea v-model="replyForm.adminReply" class="wInput" rows="4" placeholder="输入回复内容..."></textarea>
+                    <div class="form-actions">
+                        <button class="btn-success" @click="saveReply" :disabled="replySaving">{{ replySaving ? '保存中...' : '保存' }}</button>
+                        <button class="btn-cancel" @click="replyModalVisible = false">取消</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -506,22 +569,29 @@ import {
     adminListCoachingPosts, adminDeleteCoachingPost, adminUpdateCoachingPost,
     adminListPublicReports, adminDeletePublicReport, adminUpdatePublicReport,
     adminListTextTutorials, adminDeleteTextTutorial, adminUpdateTextTutorial,
-    adminListReplays, adminDeleteReplay, adminUpdateReplay
+    adminListReplays, adminDeleteReplay, adminUpdateReplay,
+    adminApproveTutorial, adminRejectTutorial,
+    adminApproveTextTutorial, adminRejectTextTutorial,
+    adminApproveCoachingPost, adminRejectCoachingPost,
+    adminApproveReplay, adminRejectReplay,
+    adminListFeedbacks, adminUpdateFeedback, adminDeleteFeedback,
+    adminGetPendingCounts
 } from '../api/api.js';
 
 const props = defineProps({ user: Object });
 
 const tabs = [
-    { key: 'users', label: '用户管理' },
-    { key: 'cheaters', label: '外挂审核' },
-    { key: 'events', label: '赛事审核' },
-    { key: 'tutorials', label: '教程管理' },
-    { key: 'streams', label: '直播管理' },
-    { key: 'clans', label: '战队招募' },
-    { key: 'coaching', label: '教练帖' },
-    { key: 'public-reports', label: '公开报告' },
-    { key: 'text-tutorials', label: '文字教程' },
-    { key: 'replays', label: '录像管理' }
+    { key: 'users', label: '用户管理', countKey: '' },
+    { key: 'cheaters', label: '外挂审核', countKey: 'cheaters' },
+    { key: 'events', label: '赛事审核', countKey: '' },
+    { key: 'tutorials', label: '教程管理', countKey: 'tutorials' },
+    { key: 'streams', label: '直播管理', countKey: '' },
+    { key: 'clans', label: '战队招募', countKey: '' },
+    { key: 'coaching', label: '教练帖', countKey: 'coachingPosts' },
+    { key: 'public-reports', label: '公开报告', countKey: '' },
+    { key: 'text-tutorials', label: '文字教程', countKey: 'textTutorials' },
+    { key: 'replays', label: '录像管理', countKey: 'replays' },
+    { key: 'feedbacks', label: '用户反馈', countKey: 'feedbacks' }
 ];
 
 const activeTab = ref('users');
@@ -535,11 +605,17 @@ const coachingPosts = ref([]);
 const publicReports = ref([]);
 const textTutorials = ref([]);
 const replays = ref([]);
+const feedbacks = ref([]);
+const pendingCounts = reactive({});
+const replyModalVisible = ref(false);
+const replyTarget = ref(null);
+const replyForm = reactive({ status: 'pending', adminReply: '' });
+const replySaving = ref(false);
 const showTutorialForm = ref(false);
 const tForm = reactive({ title: '', url: '', category: '', description: '', author: '' });
 
 const editingUser = ref(null);
-const editForm = reactive({ email: '', battleTag: '', password: '', mmr: 0, region: 'US' });
+const editForm = reactive({ email: '', nickname: '', password: '', mmr: 0, region: 'US' });
 
 // ===== Universal Edit Modal =====
 const editModalVisible = ref(false);
@@ -597,7 +673,7 @@ function startEditUser(user) {
     editingUser.value = user;
     Object.assign(editForm, {
         email: user.email,
-        battleTag: user.battleTag,
+        nickname: user.nickname,
         password: '', // Reset password input
         mmr: user.mmr,
         region: user.region || 'US'
@@ -740,6 +816,73 @@ async function deleteReplay(id) {
     try { await adminDeleteReplay(id, adminId()); await loadReplays(); } catch (e) { alert('删除失败'); }
 }
 
+// ===== Approval functions =====
+async function approveTutorial(id) {
+    try { await adminApproveTutorial(id, adminId()); await loadTutorials(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function rejectTutorial(id) {
+    try { await adminRejectTutorial(id, adminId()); await loadTutorials(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function approveTextTutorial(id) {
+    try { await adminApproveTextTutorial(id, adminId()); await loadTextTutorials(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function rejectTextTutorial(id) {
+    try { await adminRejectTextTutorial(id, adminId()); await loadTextTutorials(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function approveCoachingPost(id) {
+    try { await adminApproveCoachingPost(id, adminId()); await loadCoaching(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function rejectCoachingPost(id) {
+    try { await adminRejectCoachingPost(id, adminId()); await loadCoaching(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function approveReplayItem(id) {
+    try { await adminApproveReplay(id, adminId()); await loadReplays(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+async function rejectReplayItem(id) {
+    try { await adminRejectReplay(id, adminId()); await loadReplays(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+
+// ===== Feedback functions =====
+async function loadFeedbacks() {
+    try { const res = await adminListFeedbacks(adminId()); feedbacks.value = res.data?.data || []; } catch (e) { console.error(e); }
+}
+async function deleteFeedbackItem(id) {
+    if (!confirm('确认删除？')) return;
+    try { await adminDeleteFeedback(id, adminId()); await loadFeedbacks(); await loadPendingCounts(); } catch (e) { alert('删除失败'); }
+}
+async function resolveFeedback(id) {
+    try { await adminUpdateFeedback(id, { status: 'resolved' }, adminId()); await loadFeedbacks(); await loadPendingCounts(); } catch (e) { alert('操作失败'); }
+}
+function openReplyModal(fb) {
+    replyTarget.value = fb;
+    replyForm.status = fb.status || 'pending';
+    replyForm.adminReply = fb.adminReply || '';
+    replyModalVisible.value = true;
+}
+async function saveReply() {
+    replySaving.value = true;
+    try {
+        await adminUpdateFeedback(replyTarget.value.id, { status: replyForm.status, adminReply: replyForm.adminReply }, adminId());
+        replyModalVisible.value = false;
+        await loadFeedbacks();
+        await loadPendingCounts();
+    } catch (e) {
+        alert('保存失败');
+    } finally {
+        replySaving.value = false;
+    }
+}
+
+// ===== Pending counts =====
+async function loadPendingCounts() {
+    try {
+        const res = await adminGetPendingCounts(adminId());
+        const data = res.data?.data || {};
+        Object.keys(pendingCounts).forEach(k => delete pendingCounts[k]);
+        Object.assign(pendingCounts, data);
+    } catch (e) { console.error(e); }
+}
+
 function loadTab() {
     if (activeTab.value === 'users') loadUsers();
     else if (activeTab.value === 'cheaters') loadCheaters();
@@ -751,10 +894,14 @@ function loadTab() {
     else if (activeTab.value === 'public-reports') loadPublicReports();
     else if (activeTab.value === 'text-tutorials') loadTextTutorials();
     else if (activeTab.value === 'replays') loadReplays();
+    else if (activeTab.value === 'feedbacks') loadFeedbacks();
 }
 
 watch(activeTab, loadTab);
-onMounted(loadTab);
+onMounted(() => {
+    loadTab();
+    loadPendingCounts();
+});
 </script>
 
 <style scoped>
@@ -1087,5 +1234,100 @@ onMounted(loadTab);
         color: var(--sc2-text-dim);
         margin-right: 8px;
     }
+}
+
+/* Pending count badge on tabs */
+.tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    background: #e74c3c;
+    border-radius: 9px;
+    line-height: 1;
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.status-badge.pending {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+.status-badge.approved {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+.status-badge.rejected {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+.status-badge.resolved {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+.status-badge.processing {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+}
+
+/* Reply modal */
+.reply-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.reply-modal {
+    background: var(--sc2-section-bg, #1a1a2e);
+    border: 1px solid var(--sc2-border);
+    border-radius: 12px;
+    padding: 24px;
+    min-width: 400px;
+    max-width: 90vw;
+}
+.reply-modal h3 {
+    margin-bottom: 16px;
+    color: var(--sc2-accent);
+}
+.reply-modal label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--sc2-text-dim);
+    font-size: 13px;
+}
+.reply-modal select,
+.reply-modal textarea {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--sc2-border);
+    border-radius: 6px;
+    color: var(--sc2-text);
+    font-size: 14px;
+}
+.reply-modal textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+.reply-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
 }
 </style>

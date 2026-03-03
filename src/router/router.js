@@ -22,6 +22,7 @@ const routes = [
     { path: '/profile', component: homePage },
     { path: '/public-reports', component: homePage },
     { path: '/clan', component: homePage },
+    { path: '/feedback', component: homePage },
     { path: '/admin', component: homePage },
     { path: '/:pathMatch(.*)*', component: homePage }
 ];

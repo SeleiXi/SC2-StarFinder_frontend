@@ -23,6 +23,22 @@
             </div>
             <textarea v-model="form.description" class="wInput textarea-input" placeholder="描述（行为描述，必填，最多2000字）" rows="4" maxlength="2000"></textarea>
             <div class="char-count">{{ form.description.length }} / 2000</div>
+            
+            <!-- Image Upload -->
+            <div class="image-upload-section">
+                <label class="upload-label">上传图片 (选填，支持jpg/png/gif/webp，最大5MB)</label>
+                <div class="image-upload-area" @click="triggerImageInput">
+                    <img v-if="form.imagePreview" :src="form.imagePreview" class="image-preview" />
+                    <div v-else class="upload-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"/></svg>
+                        <span>点击上传图片</span>
+                    </div>
+                    <button v-if="form.imagePreview" class="clear-image-btn" @click.stop="clearImage">✕</button>
+                </div>
+                <input ref="imageInputRef" type="file" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" @change="handleImageSelect">
+                <span v-if="imageUploadMsg" class="msg error">{{ imageUploadMsg }}</span>
+            </div>
+
             <div class="form-actions">
                 <button class="btn-submit" @click="submitReport" :disabled="submitting">{{ submitting ? '提交中...' : '提交' }}</button>
                 <button class="btn-cancel" @click="showForm = false; resetForm()">取消</button>
@@ -46,6 +62,9 @@
                     <span class="report-date">{{ formatDate(r.createdAt) }}</span>
                 </div>
                 <p class="report-desc">{{ r.description }}</p>
+                <div class="report-image" v-if="r.imageUrl">
+                    <img :src="r.imageUrl" alt="举报截图" @click="openFullImage(r.imageUrl)" />
+                </div>
                 <div class="report-footer" v-if="isAdmin">
                     <button class="delete-btn" @click="deleteReport(r.id)">删除</button>
                 </div>
@@ -80,12 +99,59 @@ const submitting = ref(false);
 const successMsg = ref('');
 const errorMsg = ref('');
 
-const form = ref({ gameId: '', mmrMin: null, mmrMax: null, description: '' });
+const form = ref({ gameId: '', mmrMin: null, mmrMax: null, description: '', imageUrl: '', imagePreview: '' });
+const imageInputRef = ref(null);
+const imageUploadMsg = ref('');
 
 function resetForm() {
-    form.value = { gameId: '', mmrMin: null, mmrMax: null, description: '' };
+    form.value = { gameId: '', mmrMin: null, mmrMax: null, description: '', imageUrl: '', imagePreview: '' };
     successMsg.value = '';
     errorMsg.value = '';
+    imageUploadMsg.value = '';
+}
+
+function triggerImageInput() { imageInputRef.value?.click(); }
+
+function clearImage() {
+    form.value.imageUrl = '';
+    form.value.imagePreview = '';
+    imageUploadMsg.value = '';
+}
+
+async function handleImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        imageUploadMsg.value = '图片不能超过5MB';
+        return;
+    }
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        imageUploadMsg.value = '只支持 jpg/png/gif/webp 格式';
+        return;
+    }
+    imageUploadMsg.value = '上传中...';
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await axios.post('/public-report/upload-image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (res.data.code === 200) {
+            form.value.imageUrl = res.data.data.url;
+            form.value.imagePreview = res.data.data.url;
+            imageUploadMsg.value = '';
+        } else {
+            imageUploadMsg.value = res.data.msg || '上传失败';
+        }
+    } catch (err) {
+        imageUploadMsg.value = err.response?.data?.msg || '上传失败';
+    }
+    e.target.value = '';
+}
+
+function openFullImage(url) {
+    window.open(url, '_blank');
 }
 
 async function loadReports(search) {
@@ -122,7 +188,11 @@ async function submitReport() {
     submitting.value = true;
     try {
         const res = await axios.post('/public-report', {
-            ...form.value,
+            gameId: form.value.gameId,
+            description: form.value.description,
+            mmrMin: form.value.mmrMin,
+            mmrMax: form.value.mmrMax,
+            imageUrl: form.value.imageUrl || null,
             userId: currentUser?.id
         });
         if (res.data.code === 200) {
@@ -371,4 +441,34 @@ onMounted(() => loadReports(''));
     color: var(--sc2-text-dim);
     font-size: 14px;
 }
+
+/* Image Upload Styles */
+.image-upload-section { margin-bottom: 12px; }
+.upload-label { display: block; font-size: 13px; color: var(--sc2-text-dim); margin-bottom: 6px; }
+.image-upload-area {
+    position: relative;
+    border: 2px dashed var(--sc2-border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.image-upload-area:hover { border-color: var(--sc2-accent); }
+.upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--sc2-text-dim); font-size: 13px; }
+.image-preview { max-width: 100%; max-height: 200px; border-radius: 6px; object-fit: contain; }
+.clear-image-btn {
+    position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(255,80,80,0.9); color: #fff; border: none; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* Report Image */
+.report-image { margin-top: 10px; }
+.report-image img { max-width: 100%; max-height: 400px; border-radius: 8px; cursor: pointer; object-fit: contain; transition: opacity 0.2s; }
+.report-image img:hover { opacity: 0.85; }
 </style>

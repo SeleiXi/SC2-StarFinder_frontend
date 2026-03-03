@@ -127,6 +127,15 @@
                     <span class="nav-label">MMR 查询</span>
                 </a>
 
+                <!-- BUG及其他反馈 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 18 }" @click.prevent="switchPage(18)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z" />
+                    </svg>
+                    <span class="nav-label">BUG及其他反馈</span>
+                </a>
+
                 <!-- 管理后台 (admin only) -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 99 }" @click.prevent="switchPage(99)"
                     v-if="isLogin && (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')">
@@ -136,6 +145,7 @@
                             d="M680-280q25 0 42.5-17.5T740-340q0-25-17.5-42.5T680-400q-25 0-42.5 17.5T620-340q0 25 17.5 42.5T680-280Zm0 120q31 0 57-14.5t42-39.5q-22-13-47-19.5t-52-6.5q-27 0-52 6.5T581-214q16 25 42 39.5t57 14.5ZM480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v227q-19-8-39-12.5t-41-4.5q-78 0-134.5 55.5T530-360q0 54 28.5 100T620-194l-20 14-120 100Zm200 0q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80Z" />
                     </svg>
                     <span class="nav-label">管理后台</span>
+                    <span class="pending-badge" v-if="pendingTotal > 0">{{ pendingTotal }}</span>
                 </a>
             </nav>
             <!-- Bottom user area -->
@@ -143,7 +153,7 @@
                 <a href="#" class="nav-item user-item" v-if="isLogin" :class="{ active: currentId === 12 }"
                     @click.prevent="switchPage(12)">
                     <div class="avatar-mini" :style="getUserAvatarStyle(currentUser?.avatar)"></div>
-                    <span class="nav-label">{{ currentUser?.battleTag || currentUser?.email || '个人信息' }}</span>
+                    <span class="nav-label">{{ currentUser?.nickname || currentUser?.email || '个人信息' }}</span>
                 </a>
                 <button class="nav-item logout-btn" v-if="isLogin" @click="handleLogout"
                     style="margin-top: 10px; border: none; background: transparent; width: 100%; cursor: pointer;">
@@ -201,6 +211,7 @@
                 <PublicReports v-if="currentId == 16 && !profileEditMode"></PublicReports>
                 <ClanInfo v-if="currentId == 17 && !profileEditMode"></ClanInfo>
                 <AdminPanel v-if="currentId == 99 && !profileEditMode" :user="currentUser"></AdminPanel>
+                <BugFeedback v-if="currentId == 18 && !profileEditMode"></BugFeedback>
             </div>
             <!-- Footer -->
             <footer class="site-footer">
@@ -228,7 +239,8 @@ import AIAssistant from './components/AIAssistant.vue';
 import FindMmr from './components/FindMmr.vue';
 import PublicReports from './components/PublicReports.vue';
 import ClanInfo from './components/ClanInfo.vue';
-import { getStoredUser, clearUser } from './api/api.js';
+import BugFeedback from './components/BugFeedback.vue';
+import { getStoredUser, clearUser, adminGetPendingCounts } from './api/api.js';
 import terranImgH from './assets/icons/terran.png';
 import zergImgH from './assets/icons/zerg.png';
 import protossImgH from './assets/icons/protoss.png';
@@ -249,6 +261,7 @@ const isLogin = ref(false);
 const currentUser = ref(null);
 const currentId = ref(8);
 const openMenus = reactive({ match: true, cheat: false });
+const pendingTotal = ref(0);
 
 // Map URL path to page ID
 function pathToId(path) {
@@ -260,7 +273,7 @@ function pathToId(path) {
     }
     const map = {
         '/events': 7, '/tutorial': 8, '/profile': 12, '/streams': 13,
-        '/mmr': 15, '/public-reports': 16, '/clan': 17, '/admin': 99,
+        '/mmr': 15, '/public-reports': 16, '/clan': 17, '/feedback': 18, '/admin': 99,
         '/cheater/report': 10, '/cheater/list': 11, '/cheater': 10
     };
     for (const [k, v] of Object.entries(map)) {
@@ -274,7 +287,7 @@ function idToPath(id) {
     const map = {
         2: '/match/1v1', 3: '/match/2v2', 4: '/match/3v3', 5: '/match/4v4', 6: '/match/coop',
         7: '/events', 8: '/tutorial', 10: '/cheater/report', 11: '/cheater/list',
-        12: '/profile', 13: '/streams', 14: '/ai', 15: '/mmr', 16: '/public-reports', 17: '/clan', 99: '/admin'
+        12: '/profile', 13: '/streams', 14: '/ai', 15: '/mmr', 16: '/public-reports', 17: '/clan', 18: '/feedback', 99: '/admin'
     };
     return map[id] || '/';
 }
@@ -284,6 +297,12 @@ onMounted(() => {
     if (user) {
         isLogin.value = true;
         currentUser.value = user;
+        // Load pending counts for admins
+        if (user.role === 'admin' || user.role === 'super_admin') {
+            adminGetPendingCounts(user.id).then(res => {
+                pendingTotal.value = res.data?.data?.total || 0;
+            }).catch(() => {});
+        }
     }
     if (window.innerWidth <= 768) {
         sidebarCollapsed.value = true;
@@ -689,5 +708,19 @@ function handleLogout() {
     .main-content {
         padding: 10px;
     }
+}
+
+.pending-badge {
+    background: #ff4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 9px;
+    padding: 0 5px;
+    margin-left: auto;
 }
 </style>
