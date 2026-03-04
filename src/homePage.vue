@@ -232,24 +232,27 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, defineAsyncComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
-import findMatch from './components/FindMatch.vue';
-import matchInfo from './components/MatchInfoPublicity.vue';
-import Profile from './components/Profile.vue';
-import ProfileEdit from './components/ProfileEdit.vue';
-import RecordCheater from './components/RecordCheater.vue';
-import CheaterList from './components/CheaterList.vue';
+// Eagerly load the default page (Tutorial) and commonly used FindMatch
 import Tutorial from './components/Tutorial.vue';
-import StreamList from './components/StreamList.vue';
-import AdminPanel from './components/AdminPanel.vue';
-import AIAssistant from './components/AIAssistant.vue';
-import FindMmr from './components/FindMmr.vue';
-import PublicReports from './components/PublicReports.vue';
-import ClanInfo from './components/ClanInfo.vue';
-import BugFeedback from './components/BugFeedback.vue';
-import QqGroupPromo from './components/QqGroupPromo.vue';
+import findMatch from './components/FindMatch.vue';
+
+// Lazy-load all other components (code splitting — only downloaded when needed)
+const matchInfo = defineAsyncComponent(() => import('./components/MatchInfoPublicity.vue'));
+const Profile = defineAsyncComponent(() => import('./components/Profile.vue'));
+const ProfileEdit = defineAsyncComponent(() => import('./components/ProfileEdit.vue'));
+const RecordCheater = defineAsyncComponent(() => import('./components/RecordCheater.vue'));
+const CheaterList = defineAsyncComponent(() => import('./components/CheaterList.vue'));
+const StreamList = defineAsyncComponent(() => import('./components/StreamList.vue'));
+const AdminPanel = defineAsyncComponent(() => import('./components/AdminPanel.vue'));
+const AIAssistant = defineAsyncComponent(() => import('./components/AIAssistant.vue'));
+const FindMmr = defineAsyncComponent(() => import('./components/FindMmr.vue'));
+const PublicReports = defineAsyncComponent(() => import('./components/PublicReports.vue'));
+const ClanInfo = defineAsyncComponent(() => import('./components/ClanInfo.vue'));
+const BugFeedback = defineAsyncComponent(() => import('./components/BugFeedback.vue'));
+const QqGroupPromo = defineAsyncComponent(() => import('./components/QqGroupPromo.vue'));
 import { getStoredUser, clearUser, adminGetPendingCounts } from './api/api.js';
 import terranImgH from './assets/icons/terran.png';
 import zergImgH from './assets/icons/zerg.png';
@@ -579,9 +582,7 @@ function handleLogout() {
 /* ===== MAIN ===== */
 .sc2-main {
     min-height: 100vh;
-    background:
-        linear-gradient(rgba(8, 11, 18, 0.65), rgba(8, 11, 18, 0.75)),
-        url("./assets/pics/main-bg.jpg") center/cover no-repeat fixed;
+    background: rgb(8, 11, 18);
     position: relative;
 }
 
