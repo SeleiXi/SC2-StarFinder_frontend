@@ -393,6 +393,38 @@
             </div>
         </div>
 
+        <!-- ===== QQ Groups Tab ===== -->
+        <div v-if="activeTab === 'qq-groups'" class="tab-content">
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>群名</th><th>群号</th><th>描述</th><th>联系方式</th><th>作者</th><th>操作</th></tr></thead>
+                    <tbody>
+                        <tr v-for="g in qqGroups" :key="g.id">
+                            <td>{{ g.id }}</td>
+                            <td>{{ g.groupName }}</td>
+                            <td>{{ g.groupNumber }}</td>
+                            <td class="desc-cell">{{ g.description }}</td>
+                            <td>{{ g.contactInfo }}</td>
+                            <td>{{ g.authorTag || g.userId }}</td>
+                            <td class="action-cell">
+                                <button class="btn-info btn-sm" @click="openEdit('qq-groups', g)" style="margin-right:4px">编辑</button>
+                                <button class="btn-danger btn-sm" @click="deleteQqGroupItem(g.id)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p v-if="qqGroups.length === 0" class="empty-msg">暂无Q群信息</p>
+            </div>
+        </div>
+
+        <!-- ===== Notification Settings ===== -->
+        <div class="notification-toggle-bar">
+            <label class="toggle-label">
+                <input type="checkbox" v-model="receiveNotifications" @change="toggleNotifications" />
+                <span>接收每日Pending反馈邮件提醒（≥5条待处理时发送）</span>
+            </label>
+        </div>
+
         <!-- ===== Universal Edit Modal ===== -->
         <div class="edit-overlay" v-if="editModalVisible" @click.self="closeEditModal">
             <div class="edit-modal">
@@ -547,6 +579,24 @@
                     <textarea v-model="editModalForm.description" class="wInput" rows="3"></textarea>
                 </template>
 
+                <!-- QQ Group fields -->
+                <template v-if="editModalTab === 'qq-groups'">
+                    <label class="modal-label">群名</label>
+                    <input v-model="editModalForm.groupName" class="wInput" />
+                    <label class="modal-label">群号</label>
+                    <input v-model="editModalForm.groupNumber" class="wInput" />
+                    <label class="modal-label">描述</label>
+                    <textarea v-model="editModalForm.description" class="wInput" rows="3"></textarea>
+                    <label class="modal-label">联系方式</label>
+                    <input v-model="editModalForm.contactInfo" class="wInput" />
+                    <label class="modal-label">状态</label>
+                    <select v-model="editModalForm.status" class="wInput">
+                        <option value="approved">已通过</option>
+                        <option value="pending">待审核</option>
+                        <option value="rejected">已拒绝</option>
+                    </select>
+                </template>
+
                 <p v-if="editError" class="err-text">{{ editError }}</p>
                 <div class="form-actions">
                     <button class="btn-success" @click="saveEditModal" :disabled="editSaving">{{ editSaving ? '保存中...' : '保存修改' }}</button>
@@ -575,7 +625,9 @@ import {
     adminApproveCoachingPost, adminRejectCoachingPost,
     adminApproveReplay, adminRejectReplay,
     adminListFeedbacks, adminUpdateFeedback, adminDeleteFeedback,
-    adminGetPendingCounts
+    adminGetPendingCounts,
+    adminListQqGroups, adminDeleteQqGroup, adminUpdateQqGroup,
+    updateProfile
 } from '../api/api.js';
 
 const props = defineProps({ user: Object });
@@ -591,7 +643,8 @@ const tabs = [
     { key: 'public-reports', label: '公开报告', countKey: '' },
     { key: 'text-tutorials', label: '文字教程', countKey: 'textTutorials' },
     { key: 'replays', label: '录像管理', countKey: 'replays' },
-    { key: 'feedbacks', label: '用户反馈', countKey: 'feedbacks' }
+    { key: 'feedbacks', label: '用户反馈', countKey: 'feedbacks' },
+    { key: 'qq-groups', label: 'Q群管理', countKey: 'qqGroups' }
 ];
 
 const activeTab = ref('users');
@@ -606,6 +659,8 @@ const publicReports = ref([]);
 const textTutorials = ref([]);
 const replays = ref([]);
 const feedbacks = ref([]);
+const qqGroups = ref([]);
+const receiveNotifications = ref(false);
 const pendingCounts = reactive({});
 const replyModalVisible = ref(false);
 const replyTarget = ref(null);
@@ -651,7 +706,8 @@ async function saveEditModal() {
             coaching: adminUpdateCoachingPost,
             'public-reports': adminUpdatePublicReport,
             'text-tutorials': adminUpdateTextTutorial,
-            replays: adminUpdateReplay
+            replays: adminUpdateReplay,
+            'qq-groups': adminUpdateQqGroup
         };
         const fn = MAP[editModalTab.value];
         if (!fn) { editError.value = '未知类型'; return; }
@@ -883,6 +939,25 @@ async function loadPendingCounts() {
     } catch (e) { console.error(e); }
 }
 
+// ===== QQ Group functions =====
+async function loadQqGroups() {
+    try { const res = await adminListQqGroups(adminId()); qqGroups.value = res.data?.data || []; } catch (e) { console.error(e); }
+}
+async function deleteQqGroupItem(id) {
+    if (!confirm('确认删除？')) return;
+    try { await adminDeleteQqGroup(id, adminId()); await loadQqGroups(); await loadPendingCounts(); } catch (e) { alert('删除失败'); }
+}
+
+// ===== Notification toggle =====
+async function toggleNotifications() {
+    try {
+        await updateProfile(adminId(), { receiveNotifications: receiveNotifications.value });
+    } catch (e) {
+        alert('更新失败');
+        receiveNotifications.value = !receiveNotifications.value;
+    }
+}
+
 function loadTab() {
     if (activeTab.value === 'users') loadUsers();
     else if (activeTab.value === 'cheaters') loadCheaters();
@@ -895,12 +970,15 @@ function loadTab() {
     else if (activeTab.value === 'text-tutorials') loadTextTutorials();
     else if (activeTab.value === 'replays') loadReplays();
     else if (activeTab.value === 'feedbacks') loadFeedbacks();
+    else if (activeTab.value === 'qq-groups') loadQqGroups();
 }
 
 watch(activeTab, loadTab);
 onMounted(() => {
     loadTab();
     loadPendingCounts();
+    // Initialize notification preference from user
+    receiveNotifications.value = props.user?.receiveNotifications || false;
 });
 </script>
 
@@ -1329,5 +1407,28 @@ onMounted(() => {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+}
+
+/* Notification toggle */
+.notification-toggle-bar {
+    margin-top: 32px;
+    padding: 16px 20px;
+    background: rgba(0, 180, 216, 0.08);
+    border: 1px solid var(--sc2-border);
+    border-radius: 8px;
+}
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--sc2-text);
+    font-size: 14px;
+    cursor: pointer;
+}
+.toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--sc2-accent, #00b4d8);
+    cursor: pointer;
 }
 </style>

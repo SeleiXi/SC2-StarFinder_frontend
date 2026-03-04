@@ -37,13 +37,36 @@
                 </div>
             </div>
         </div>
+
+        <!-- Public Feedbacks -->
+        <div class="resolved-feedbacks" style="margin-top: 30px;">
+            <h3 class="section-title">反馈问题汇总</h3>
+            <p class="section-desc">以下是所有公开的BUG和反馈信息，供大家参考。</p>
+            <div v-if="publicFeedbacks.length === 0" class="empty-hint">暂无公开反馈</div>
+            <div v-for="f in publicFeedbacks" :key="'p-' + f.id" class="feedback-card sc2-panel" :class="{ 'resolved-card': f.status === 'resolved' }">
+                <div class="feedback-header">
+                    <span class="status-badge" :class="f.status">
+                        {{ statusMap[f.status] || f.status }}
+                    </span>
+                    <span class="feedback-meta">
+                        <span class="feedback-author">{{ f.authorTag || '匿名' }}</span>
+                        <span class="feedback-date">{{ formatDate(f.createdAt) }}</span>
+                    </span>
+                </div>
+                <p class="feedback-content">{{ f.content }}</p>
+                <div class="admin-reply" v-if="f.adminReply">
+                    <span class="reply-label">{{ f.status === 'resolved' ? '解决方案：' : '管理员回复：' }}</span>
+                    <p>{{ f.adminReply }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getStoredUser, createFeedback, getMyFeedbacks } from '../api/api.js';
+import { getStoredUser, createFeedback, getMyFeedbacks, getPublicFeedbacks } from '../api/api.js';
 
 const router = useRouter();
 const currentUser = getStoredUser();
@@ -53,6 +76,7 @@ const submitting = ref(false);
 const successMsg = ref('');
 const errorMsg = ref('');
 const myFeedbacks = ref([]);
+const publicFeedbacks = ref([]);
 
 const statusMap = {
     pending: '待处理',
@@ -102,6 +126,15 @@ async function loadMyFeedbacks() {
     }
 }
 
+async function loadPublicFeedbacks() {
+    try {
+        const res = await getPublicFeedbacks();
+        publicFeedbacks.value = res.data?.data || [];
+    } catch (e) {
+        publicFeedbacks.value = [];
+    }
+}
+
 function formatDate(d) {
     if (!d) return '';
     return new Date(d).toLocaleDateString('zh-CN');
@@ -109,6 +142,7 @@ function formatDate(d) {
 
 onMounted(() => {
     loadMyFeedbacks();
+    loadPublicFeedbacks();
 });
 </script>
 
@@ -232,4 +266,33 @@ onMounted(() => {
 }
 .reply-label { font-size: 12px; color: var(--sc2-accent); font-weight: 600; }
 .admin-reply p { color: var(--sc2-text); font-size: 13px; line-height: 1.5; margin-top: 4px; }
+
+.section-desc {
+    font-size: 13px;
+    color: var(--sc2-text-dim);
+    margin-bottom: 16px;
+}
+
+.empty-hint {
+    text-align: center;
+    color: var(--sc2-text-dim);
+    padding: 30px;
+    font-size: 14px;
+}
+
+.resolved-feedbacks { display: flex; flex-direction: column; gap: 12px; }
+
+.resolved-card { border-left: 3px solid #00c864; }
+
+.feedback-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.feedback-author {
+    font-size: 12px;
+    color: var(--sc2-accent);
+    font-weight: 600;
+}
 </style>

@@ -3,6 +3,11 @@
         <h1 class="page-title">教学</h1>
         <p class="page-subtitle">TUTORIALS & COACHING</p>
 
+        <!-- Global success toast -->
+        <Transition name="toast">
+            <div v-if="successTip" class="success-toast">✓ {{ successTip }}</div>
+        </Transition>
+
         <!-- Sub-section tabs -->
         <div class="section-tabs">
             <button :class="{ active: activeSection === 'video' }" @click="activeSection = 'video'">
@@ -254,6 +259,13 @@ function requireLogin(callback) {
     callback();
 }
 const raceMap = { T: '人族', Z: '异虫', P: '星灵', R: '随机' };
+const successTip = ref('');
+let successTimer = null;
+function showSuccess(msg) {
+    successTip.value = msg;
+    if (successTimer) clearTimeout(successTimer);
+    successTimer = setTimeout(() => { successTip.value = ''; }, 4000);
+}
 
 // ---- VIDEO ----
 const tutorials = ref([]);
@@ -297,7 +309,7 @@ async function submitTutorial() {
             showPublishDialog.value = false;
             publishForm.value = { title: '', url: '', category: '入门', description: '', author: currentUser?.nickname || currentUser?.email || '' };
             publishError.value = '';
-            alert('内容已经提交审核，通过后显示');
+            showSuccess('内容已经提交审核，通过后显示');
             await loadTutorials(currentCat.value);
         } else {
             publishError.value = res.data.msg || '发布失败';
@@ -335,8 +347,8 @@ async function submitCoaching() {
     try {
         const res = await createCoachingPost({ ...coachForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
-            coachMsg.value = '内容已经提交审核，通过后显示';
             showCoachingForm.value = false;
+            showSuccess('内容已经提交审核，通过后显示');
             coachForm.value = { title: '', postType: 'coach', race: '', mmr: null, priceInfo: '', contact: '', description: '' };
             await loadCoaching(coachingTab.value);
         } else {
@@ -381,8 +393,8 @@ async function submitTextTutorial() {
     try {
         const res = await createTextTutorial({ ...textForm.value, userId: currentUser?.id });
         if (res.data.code === 200) {
-            textMsg.value = '内容已经提交审核，通过后显示';
             showTextForm.value = false;
+            showSuccess('内容已经提交审核，通过后显示');
             textForm.value = { title: '', category: '', content: '' };
             await loadTextTutorials(textCat.value);
             await loadTextCategories();
@@ -443,8 +455,8 @@ async function submitReplay() {
         fd.append('category', replayForm.value.category || '');
         const res = await api.post('/replay', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         if (res.data.code === 200) {
-            replayMsg.value = '内容已经提交审核，通过后显示';
             showReplayForm.value = false;
+            showSuccess('内容已经提交审核，通过后显示');
             replayForm.value = { title: '', category: '', description: '', file: null };
             await loadReplays(replayCat.value);
         } else {
@@ -476,6 +488,24 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.success-toast {
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    color: #2ecc71;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+.toast-enter-active { animation: toastIn .3s ease; }
+.toast-leave-active { animation: toastIn .3s ease reverse; }
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .tutorial-page {
     max-width: 1000px;
     margin: 0 auto;

@@ -108,6 +108,15 @@
                     </transition>
                 </div>
 
+                <!-- Q群宣传 -->
+                <a href="#" class="nav-item" :class="{ active: currentId === 19 }" @click.prevent="switchPage(19)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor">
+                        <path d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z" />
+                    </svg>
+                    <span class="nav-label">Q群宣传</span>
+                </a>
+
                 <!-- 赛事宣传 -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 7 }" @click.prevent="switchPage(7)">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -135,7 +144,6 @@
                     </svg>
                     <span class="nav-label">BUG及其他反馈</span>
                 </a>
-
                 <!-- 管理后台 (admin only) -->
                 <a href="#" class="nav-item" :class="{ active: currentId === 99 }" @click.prevent="switchPage(99)"
                     v-if="isLogin && (currentUser?.role === 'admin' || currentUser?.role === 'super_admin')">
@@ -212,6 +220,7 @@
                 <ClanInfo v-if="currentId == 17 && !profileEditMode"></ClanInfo>
                 <AdminPanel v-if="currentId == 99 && !profileEditMode" :user="currentUser"></AdminPanel>
                 <BugFeedback v-if="currentId == 18 && !profileEditMode"></BugFeedback>
+                <QqGroupPromo v-if="currentId == 19 && !profileEditMode"></QqGroupPromo>
             </div>
             <!-- Footer -->
             <footer class="site-footer">
@@ -240,6 +249,7 @@ import FindMmr from './components/FindMmr.vue';
 import PublicReports from './components/PublicReports.vue';
 import ClanInfo from './components/ClanInfo.vue';
 import BugFeedback from './components/BugFeedback.vue';
+import QqGroupPromo from './components/QqGroupPromo.vue';
 import { getStoredUser, clearUser, adminGetPendingCounts } from './api/api.js';
 import terranImgH from './assets/icons/terran.png';
 import zergImgH from './assets/icons/zerg.png';
@@ -273,7 +283,7 @@ function pathToId(path) {
     }
     const map = {
         '/events': 7, '/tutorial': 8, '/profile': 12, '/streams': 13,
-        '/mmr': 15, '/public-reports': 16, '/clan': 17, '/feedback': 18, '/admin': 99,
+        '/mmr': 15, '/public-reports': 16, '/clan': 17, '/feedback': 18, '/qq-group': 19, '/admin': 99,
         '/cheater/report': 10, '/cheater/list': 11, '/cheater': 10
     };
     for (const [k, v] of Object.entries(map)) {
@@ -287,7 +297,7 @@ function idToPath(id) {
     const map = {
         2: '/match/1v1', 3: '/match/2v2', 4: '/match/3v3', 5: '/match/4v4', 6: '/match/coop',
         7: '/events', 8: '/tutorial', 10: '/cheater/report', 11: '/cheater/list',
-        12: '/profile', 13: '/streams', 14: '/ai', 15: '/mmr', 16: '/public-reports', 17: '/clan', 18: '/feedback', 99: '/admin'
+        12: '/profile', 13: '/streams', 14: '/ai', 15: '/mmr', 16: '/public-reports', 17: '/clan', 18: '/feedback', 19: '/qq-group', 99: '/admin'
     };
     return map[id] || '/';
 }
@@ -570,7 +580,7 @@ function handleLogout() {
 .sc2-main {
     min-height: 100vh;
     background:
-        linear-gradient(rgba(8, 11, 18, 0.85), rgba(8, 11, 18, 0.85)),
+        linear-gradient(rgba(8, 11, 18, 0.65), rgba(8, 11, 18, 0.75)),
         url("./assets/pics/main-bg.jpg") center/cover no-repeat fixed;
     position: relative;
 }

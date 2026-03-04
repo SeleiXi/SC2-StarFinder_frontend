@@ -184,6 +184,28 @@ export function getMyFeedbacks() {
     return api.get('/feedback/my');
 }
 
+export function getResolvedFeedbacks() {
+    return api.get('/feedback/resolved');
+}
+
+export function getPublicFeedbacks() {
+    return api.get('/feedback/public');
+}
+
+// ============ QQ Group APIs ============
+
+export function getQqGroups() {
+    return api.get('/qq-group/list');
+}
+
+export function createQqGroup(data) {
+    return api.post('/qq-group', data);
+}
+
+export function deleteQqGroup(id) {
+    return api.delete(`/qq-group/${id}`);
+}
+
 // ============ Coaching APIs ============
 
 export function getCoachingPosts(type) {
@@ -415,6 +437,17 @@ export function adminUpdateFeedback(id, data, adminId) {
 }
 export function adminDeleteFeedback(id, adminId) {
     return api.delete(`/admin/feedbacks/${id}`, { params: { adminId } });
+}
+
+// --- QQ Groups ---
+export function adminListQqGroups(adminId) {
+    return api.get('/admin/qq-groups', { params: { adminId } });
+}
+export function adminDeleteQqGroup(id, adminId) {
+    return api.delete(`/admin/qq-groups/${id}`, { params: { adminId } });
+}
+export function adminUpdateQqGroup(id, data, adminId) {
+    return api.put(`/admin/qq-groups/${id}`, data, { params: { adminId } });
 }
 
 // --- Pending counts ---

@@ -81,9 +81,7 @@
                     <label>战网 ID (只需要填写你想要被搜索到的那个服务器即可)</label>
                     <div class="tag-input-group">
                         <input type="text" placeholder="国服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagCN">
-                        <input type="text" placeholder="美服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagUS">
-                        <input type="text" placeholder="欧服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagEU">
-                        <input type="text" placeholder="韩服/台服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagKR">
+                        <input type="text" placeholder="美/韩/欧服战网ID (如 XXX#1234)" class="wInput" v-model="form.battleTagUS">
                     </div>
                 </div>
 

@@ -23,6 +23,7 @@ const routes = [
     { path: '/public-reports', component: homePage },
     { path: '/clan', component: homePage },
     { path: '/feedback', component: homePage },
+    { path: '/qq-group', component: homePage },
     { path: '/admin', component: homePage },
     { path: '/:pathMatch(.*)*', component: homePage }
 ];

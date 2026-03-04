@@ -160,7 +160,7 @@
                 <table class="sc2-table">
                 <thead>
                     <tr>
-                        <th>战网ID</th>
+                        <th>昵称</th>
                         <th v-if="mode !== 'coop'">MMR</th>
                         <th>{{ mode === 'coop' ? '常用指挥官' : '种族' }}</th>
                         <th v-if="mode === 'coop'">等级</th>
@@ -170,7 +170,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="p in matchResults" :key="p.id">
-                        <td>{{ p.battleTag || '-' }}</td>
+                        <td>{{ p.nickname || '-' }}</td>
                         <td v-if="mode !== 'coop'"><span class="mmr-cell">{{ getDisplayMmr(p) }}</span></td>
                         <td>{{ mode === 'coop' ? (p.commander || '-') : (raceMap[p.race] || p.race || '-') }}</td>
                         <td v-if="mode === 'coop'"><span class="coop-level-badge" v-if="p.coopLevel">{{ p.coopLevel }}</span><span v-else>-</span></td>

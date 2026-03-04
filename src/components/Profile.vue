@@ -30,16 +30,8 @@
                     <span class="info-value">{{ user?.battleTagCN || '-' }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">战网ID (美服)</span>
-                    <span class="info-value">{{ user?.battleTagUS || '-' }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">战网ID (欧服)</span>
-                    <span class="info-value">{{ user?.battleTagEU || '-' }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">战网ID (韩服/台服)</span>
-                    <span class="info-value">{{ user?.battleTagKR || '-' }}</span>
+                    <span class="info-label">战网ID (美/韩/欧服)</span>
+                    <span class="info-value">{{ user?.battleTagUS || user?.battleTagEU || user?.battleTagKR || '-' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">QQ/联系方式</span>
