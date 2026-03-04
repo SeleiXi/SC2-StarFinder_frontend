@@ -11,19 +11,19 @@ const BACKEND_PORT = 8089;
 
 const MIME_TYPES = {
     '.html': 'text/html; charset=utf-8',
-    '.js':   'text/javascript; charset=utf-8',
-    '.css':  'text/css; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
     '.json': 'application/json',
-    '.png':  'image/png',
-    '.jpg':  'image/jpeg',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
-    '.gif':  'image/gif',
-    '.svg':  'image/svg+xml',
-    '.ico':  'image/x-icon',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
     '.webp': 'image/webp',
     '.woff': 'font/woff',
-    '.woff2':'font/woff2',
-    '.map':  'application/json',
+    '.woff2': 'font/woff2',
+    '.map': 'application/json',
 };
 
 // Extensions that benefit from gzip compression
