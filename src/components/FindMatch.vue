@@ -161,6 +161,8 @@
                 <thead>
                     <tr>
                         <th>昵称</th>
+                        <th>战网ID</th>
+                        <th>服务器</th>
                         <th v-if="mode !== 'coop'">MMR</th>
                         <th>{{ mode === 'coop' ? '常用指挥官' : '种族' }}</th>
                         <th v-if="mode === 'coop'">等级</th>
@@ -171,6 +173,8 @@
                 <tbody>
                     <tr v-for="p in matchResults" :key="p.id">
                         <td>{{ p.nickname || '-' }}</td>
+                        <td>{{ getBattleTag(p) }}</td>
+                        <td>{{ getServer(p) }}</td>
                         <td v-if="mode !== 'coop'"><span class="mmr-cell">{{ getDisplayMmr(p) }}</span></td>
                         <td>{{ mode === 'coop' ? (p.commander || '-') : (raceMap[p.race] || p.race || '-') }}</td>
                         <td v-if="mode === 'coop'"><span class="coop-level-badge" v-if="p.coopLevel">{{ p.coopLevel }}</span><span v-else>-</span></td>
@@ -369,6 +373,23 @@ function getDisplayMmr(p) {
     if (props.mode === '3v3') return p.mmr3v3 || 0;
     if (props.mode === '4v4') return p.mmr4v4 || 0;
     return p.mmr || 0;
+}
+
+function getBattleTag(p) {
+    const tags = [];
+    if (p.battleTagCN) tags.push(p.battleTagCN);
+    if (p.battleTagUS) tags.push(p.battleTagUS);
+    if (p.battleTagEU) tags.push(p.battleTagEU);
+    if (p.battleTagKR) tags.push(p.battleTagKR);
+    return tags.length > 0 ? tags.join(' / ') : '-';
+}
+
+function getServer(p) {
+    const servers = [];
+    if (p.battleTagCN) servers.push('国服');
+    if (p.battleTagUS || p.battleTagEU || p.battleTagKR) servers.push('美/韩/欧服');
+    if (servers.length > 0) return servers.join(' / ');
+    return p.region || '-';
 }
 
 async function startMatch() {
