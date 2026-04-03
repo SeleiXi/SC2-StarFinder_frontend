@@ -1,6 +1,6 @@
 # SC2 StarFinder - Frontend
 
-约战匹配、赛事宣传、外挂举报、教学视频、直播列表
+SC2 StarFinder 前端站点，采用侧边栏单页布局，覆盖教学、约战、战队、直播、举报、公示、社区反馈与管理后台等功能。
 
 ---
 
@@ -36,16 +36,24 @@ src/
 │       ├── login-cover.jpg    # 登录封面
 │       └── profile-image.png  # 默认头像
 ├── components/
-│   ├── FindMatch.vue          # 约战匹配
-│   ├── MatchInfoPublicity.vue # 赛事宣传
-│   ├── Tutorial.vue           # 教学视频
-│   ├── StreamList.vue         # SC2 直播列表
+│   ├── Tutorial.vue           # 教学中心（视频 / 陪玩陪练 / 文字教学 / Replay）
+│   ├── FindMatch.vue          # 约战匹配（1v1 / 2v2 / 3v3 / 4v4 / 合作任务）
+│   ├── ClanInfo.vue           # 战队排行榜 / 搜索 / 招新
+│   ├── StreamList.vue         # 直播列表
+│   ├── PublicReports.vue      # 挂人区
 │   ├── RecordCheater.vue      # 登记外挂
 │   ├── CheaterList.vue        # 外挂图鉴
+│   ├── QqGroupPromo.vue       # Q群宣传
+│   ├── MatchInfoPublicity.vue # 赛事宣传
+│   ├── FindMmr.vue            # MMR 查询
+│   ├── BugFeedback.vue        # BUG 及其他反馈
+│   ├── AdminPanel.vue         # 管理后台
 │   ├── Profile.vue            # 个人信息
 │   ├── ProfileEdit.vue        # 编辑资料
+│   ├── AIAssistant.vue        # AI 助手（预留页面）
 │   ├── LoginUserName.vue      # 账号密码登录
 │   ├── LoginUserPhone.vue     # 验证码登录
+│   ├── ForgotPassword.vue     # 找回密码
 │   ├── Register.vue           # 注册表单
 │   └── widgets/
 │       ├── wSubmitButton.vue   # 提交按钮
@@ -102,17 +110,43 @@ devServer: {
 - **视觉特效**: 渐变面板边框、光晕发光、脉冲动画、毛玻璃效果
 - **种族配色**: 人族橙 `#e07020` / 异虫紫 `#b030c0` / 星灵蓝 `#30a0e0`
 
-## 功能模块
+## Sidebar 导航功能
 
-| 模块     | 说明                               |
-| -------- | ---------------------------------- |
-| 约战匹配 | 选择种族 & MMR 范围，匹配同服玩家  |
-| 赛事宣传 | 浏览/发布 SC2 赛事信息             |
-| 教学视频 | 分类浏览教学视频（入门/进阶/高级） |
-| 直播列表 | 实时获取 SC2 主播直播状态          |
-| 外挂图鉴 | 搜索/浏览 已记录的外挂玩家         |
-| 登记外挂 | 举报可疑外挂玩家                   |
-| 个人信息 | 查看/编辑个人资料                  |
+当前侧边栏已覆盖以下页面与能力：
+
+| 侧边栏入口 | 子项/页面 | 说明 |
+| -------- | -------- | ---- |
+| 教学 | 教学视频 / 陪玩陪练 / 文字教学 / Replay 下载 | 支持分类浏览、发布内容、上传 Replay 文件 |
+| 约战 | 1v1 / 2v2 / 3v3 / 4v4 / 合作任务 | 按模式、MMR、种族或合作等级进行匹配 |
+| 战队 | 战队排行榜 / 搜索战队 / 战队招新 | 查看排行榜、搜索战队、发布和删除招新信息 |
+| 直播列表 | 单页入口 | 聚合 SC2 直播信息 |
+| 挂人区 | 单页入口 | 搜索、发布、查看挂人记录，支持上传截图 |
+| 外挂图鉴 | 登记外挂 / 外挂图鉴 | 举报疑似外挂玩家，并浏览已收录记录 |
+| Q群宣传 | 单页入口 | 发布、浏览、删除 SC2 QQ 群宣传信息 |
+| 赛事宣传 | 单页入口 | 浏览和发布赛事宣传内容 |
+| MMR 查询 | 单页入口 | 查询玩家跨服务器 MMR 汇总与分模式数据 |
+| BUG及其他反馈 | 单页入口 | 提交反馈、查看自己的反馈记录与公开反馈汇总 |
+| 管理后台 | 管理员可见 | 统一管理用户、赛事、外挂、教程、文字教学、陪练、挂人区、QQ群、反馈等内容 |
+| 个人信息 | 登录后显示 | 查看个人资料、头像、MMR 和编辑信息 |
+| 登录/登出 | 侧边栏底部 | 未登录时跳转登录，已登录时支持退出 |
+
+## 路由概览
+
+前端已配置与侧边栏对应的主要路由：
+
+- `/tutorial`
+- `/match/:mode`
+- `/clan`
+- `/streams`
+- `/public-reports`
+- `/cheater/report`
+- `/cheater/list`
+- `/qq-group`
+- `/events`
+- `/mmr`
+- `/feedback`
+- `/admin`
+- `/profile`
 
 ## License
 
